@@ -1,0 +1,142 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────────────────────────
+// Models
+// ──────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      String   // "SHOPKEEPER" | "DELIVERY_PARTNER"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  shop            Shop?
+  deliveryPartner DeliveryPartner?
+
+  @@map("users")
+}
+
+model Shop {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  name        String
+  description String?
+  address     String
+  phone       String?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  products Product[]
+  orders   Order[]
+
+  @@map("shops")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  shopId      String
+  name        String
+  description String?
+  price       Float
+  stock       Int      @default(0)
+  category    String
+  imageUrl    String?
+  isAvailable Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  shop          Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  orderItems    OrderItem[]
+  inventoryLogs InventoryLog[]
+
+  @@map("products")
+}
+
+model InventoryLog {
+  id           String   @id @default(cuid())
+  productId    String
+  changeAmount Int      // positive = added, negative = reduced
+  reason       String
+  stockBefore  Int
+  stockAfter   Int
+  createdAt    DateTime @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("inventory_logs")
+}
+
+model DeliveryPartner {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  vehicleType      String   @default("MOTORCYCLE") // "BICYCLE", "MOTORCYCLE", "CAR", "AUTO"
+  isAvailable      Boolean  @default(false)
+  rating           Float    @default(5.0)
+  totalDeliveries  Int      @default(0)
+  totalEarnings    Float    @default(0.0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@map("delivery_partners")
+}
+
+model Order {
+  id                String   @id @default(cuid())
+  shopId            String
+  deliveryPartnerId String?
+  status            String   @default("Pending") // "Pending", "Accepted", "PickedUp", "InTransit", "Delivered", "Cancelled"
+  totalAmount       Float
+  deliveryFee       Float    @default(40.0)
+  customerName      String
+  customerPhone     String
+  deliveryAddress   String
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  shop            Shop             @relation(fields: [shopId], references: [id])
+  deliveryPartner DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id])
+  items           OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int
+  unitPrice Float
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
