@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuthStore } from './store/useAuthStore';
 import { Login } from './pages/auth/Login';
+import { ShopkeeperRegistration } from './pages/auth/ShopkeeperRegistration';
 import { DashboardLayout } from './layouts/DashboardLayout';
 import { MockupShowcase } from './pages/MockupShowcase';
 import logoUrl from './assets/Logo.png';
@@ -57,6 +58,7 @@ function App() {
   const [shopkeeperTab, setShopkeeperTab] = useState('dashboard');
   const [deliveryTab, setDeliveryTab] = useState('dashboard');
   const [showMockup, setShowMockup] = useState(false);
+  const [authView, setAuthView] = useState('login'); // 'login' | 'register-shopkeeper'
 
   // Shopkeeper menu
   const shopkeeperMenu = [
@@ -160,76 +162,85 @@ function App() {
       {showMockup ? (
         <MockupShowcase onClose={() => setShowMockup(false)} />
       ) : !isAuthenticated ? (
-        <div className="min-h-screen flex flex-col justify-between">
-          {/* Top Navbar */}
-          <nav className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/60 px-6 py-4">
-            <div className="max-w-7xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <img src={logoUrl} className="h-9 w-auto" alt="e-LocalKart Logo" />
+        authView === 'register-shopkeeper' ? (
+          <ShopkeeperRegistration 
+            onBack={() => setAuthView('login')}
+            onRegisterSuccess={() => {
+              setAuthView('login');
+            }}
+          />
+        ) : (
+          <div className="min-h-screen flex flex-col justify-between">
+            {/* Top Navbar */}
+            <nav className="sticky top-0 z-50 bg-white/85 backdrop-blur-md border-b border-slate-200/60 px-6 py-4">
+              <div className="max-w-7xl mx-auto flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <img src={logoUrl} className="h-9 w-auto" alt="e-LocalKart Logo" />
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowMockup(true)}
+                    className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    Interactive UI Mockups
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setShowMockup(true)}
-                  className="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  Interactive UI Mockups
-                </button>
-              </div>
-            </div>
-          </nav>
+            </nav>
 
-          {/* Landing Value Prop & Login form */}
-          <main className="max-w-7xl mx-auto px-6 py-12 flex-1 flex items-center">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
-              {/* Left Column Text */}
-              <div className="lg:col-span-7 space-y-6">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
-                  <MapPin className="w-3.5 h-3.5" /> Empowering Neighborhood Commerce
-                </span>
-                <h1 className="text-4xl sm:text-5xl font-black text-slate-800 leading-[1.15] tracking-tight font-heading">
-                  Your Offline Store <br />
-                  <span className="text-[#10B981]">Digitally Orchestrated</span>
-                </h1>
-                <p className="text-slate-500 text-sm max-w-xl font-body">
-                  LocalKart connects offline shopkeepers directly with neighborhood delivery partners and buyers, streamlining logistics and saving time.
-                </p>
+            {/* Landing Value Prop & Login form */}
+            <main className="max-w-7xl mx-auto px-6 py-12 flex-1 flex items-center">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center w-full">
+                {/* Left Column Text */}
+                <div className="lg:col-span-7 space-y-6">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                    <MapPin className="w-3.5 h-3.5" /> Empowering Neighborhood Commerce
+                  </span>
+                  <h1 className="text-4xl sm:text-5xl font-black text-slate-800 leading-[1.15] tracking-tight font-heading">
+                    Your Offline Store <br />
+                    <span className="text-[#10B981]">Digitally Orchestrated</span>
+                  </h1>
+                  <p className="text-slate-500 text-sm max-w-xl font-body">
+                    LocalKart connects offline shopkeepers directly with neighborhood delivery partners and buyers, streamlining logistics and saving time.
+                  </p>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                  <div className="flex items-start gap-3 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
-                    <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                      <ShoppingBag className="w-5 h-5" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
+                    <div className="flex items-start gap-3 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
+                      <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
+                        <ShoppingBag className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-800 font-heading">For Shopkeepers</h3>
+                        <p className="text-xs text-slate-450 mt-1">Digitize your inventory, manage stock, and request instant deliveries.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-800 font-heading">For Shopkeepers</h3>
-                      <p className="text-xs text-slate-450 mt-1">Digitize your inventory, manage stock, and request instant deliveries.</p>
-                    </div>
-                  </div>
 
-                  <div className="flex items-start gap-3 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
-                    <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                      <Truck className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-800 font-heading">For Delivery Partners</h3>
-                      <p className="text-xs text-slate-405 mt-1">Accept local orders, earn per delivery, and plan routes with ease.</p>
+                    <div className="flex items-start gap-3 bg-white p-4 rounded-xl border border-slate-200/50 shadow-sm">
+                      <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
+                        <Truck className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-800 font-heading">For Delivery Partners</h3>
+                        <p className="text-xs text-slate-405 mt-1">Accept local orders, earn per delivery, and plan routes with ease.</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Login Form Widget */}
-              <div className="lg:col-span-5 flex justify-center">
-                <Login />
+                {/* Login Form Widget */}
+                <div className="lg:col-span-5 flex justify-center">
+                  <Login onRegisterShopkeeper={() => setAuthView('register-shopkeeper')} />
+                </div>
               </div>
-            </div>
-          </main>
+            </main>
 
-          {/* Footer */}
-          <footer className="border-t border-slate-200 bg-white/50 py-6 text-center text-xs text-slate-400">
-            <p>© {new Date().getFullYear()} LocalKart MERN Starter Pack. Designed for localized hyper-commerce.</p>
-          </footer>
-        </div>
+            {/* Footer */}
+            <footer className="border-t border-slate-200 bg-white/50 py-6 text-center text-xs text-slate-400">
+              <p>© {new Date().getFullYear()} LocalKart MERN Starter Pack. Designed for localized hyper-commerce.</p>
+            </footer>
+          </div>
+        )
       ) : (
         /* Authenticated Protected Dashboards */
         <div>
