@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "LocalKart Backend API — PostgreSQL + Prisma + Express + JavaScript",
   "main": "src/server.js",
+  "type": "module",
   "scripts": {
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",

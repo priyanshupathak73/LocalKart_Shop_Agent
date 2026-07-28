@@ -1,9 +1,10 @@
-const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const { prisma } = require('../config/db');
-const { signToken } = require('../utils/jwt');
-const { sendSuccess, sendError } = require('../utils/response');
-const { logger } = require('../utils/logger');
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import { prisma } from '../config/db.js';
+import { signToken } from '../utils/jwt.js';
+import { sendSuccess, sendError } from '../utils/response.js';
+import { logger } from '../utils/logger.js';
+import { sendSMSViaMSG91, sendEmailViaResend } from '../utils/messaging.js';
 
 /**
  * POST /api/auth/register
@@ -146,6 +147,9 @@ const sendOtp = async (req, res) => {
     // Log the generated OTP for grading/testing
     logger.info(`[OTP SIMULATOR] Generated OTP for ${phoneNumber}: ${otpCode} (otpId: ${otpId})`);
 
+    // Send real SMS OTP via MSG91 API
+    await sendSMSViaMSG91(phoneNumber, otpCode);
+
     // Cache details
     otpCache.set(otpId, {
       phoneNumber,
@@ -160,10 +164,13 @@ const sendOtp = async (req, res) => {
     pRecord.otpId = otpId;
     phoneCache.set(phoneNumber, pRecord);
 
+    const isMock = !process.env.MSG91_AUTH_KEY || process.env.MSG91_AUTH_KEY.includes('your_msg91_auth_key') || process.env.MSG91_AUTH_KEY === '';
+
     return sendSuccess(res, {
       success: true,
       otpId,
-      expiresIn
+      expiresIn,
+      ...(isMock && { mockOtp: otpCode })
     }, 'OTP sent successfully');
   } catch (err) {
     return sendError(res, 'Failed to send OTP', 500, err.message);
@@ -275,6 +282,14 @@ const sendEmailOtp = async (req, res) => {
       return sendError(res, 'Email address is required', 400);
     }
 
+    const formattedEmail = email.trim().toLowerCase();
+    const existingUser = await prisma.user.findFirst({
+      where: { email: formattedEmail }
+    });
+    if (existingUser) {
+      return sendError(res, 'An account with this email already exists', 409);
+    }
+
     const now = Date.now();
     let eRecord = emailRateCache.get(email) || { lastSentAt: 0, resendCount: 0, lockoutExpiresAt: 0 };
 
@@ -307,6 +322,25 @@ const sendEmailOtp = async (req, res) => {
     // Log the generated OTP for grading/testing
     logger.info(`[OTP SIMULATOR] Generated Email OTP for ${email}: ${otpCode} (otpId: ${otpId})`);
 
+    // Send real Email OTP via Resend API
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; padding: 24px; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 16px;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <h2 style="color: #10B981; font-weight: 800; margin: 0;">LocalKart</h2>
+          <p style="color: #64748b; font-size: 12px; margin: 4px 0 0 0;">Merchant Hub Onboarding</p>
+        </div>
+        <p style="font-size: 14px; color: #334155; line-height: 1.5;">Hello,</p>
+        <p style="font-size: 14px; color: #334155; line-height: 1.5;">Thank you for registering on LocalKart. Please use the verification code below to verify your email address. This OTP is valid for 2 minutes.</p>
+        <div style="background-color: #f8fafc; border: 1px solid #cbd5e1; padding: 16px; text-align: center; font-size: 28px; font-weight: 800; letter-spacing: 6px; color: #1e293b; border-radius: 12px; margin: 24px 0; font-family: monospace;">
+          ${otpCode}
+        </div>
+        <p style="font-size: 12px; color: #64748b; line-height: 1.5; margin-top: 24px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+          If you did not request this registration, you can safely ignore this email.
+        </p>
+      </div>
+    `;
+    await sendEmailViaResend(email, 'Verify your email for LocalKart Registration', emailHtml);
+
     // Cache details
     emailOtpCache.set(otpId, {
       email,
@@ -321,10 +355,13 @@ const sendEmailOtp = async (req, res) => {
     eRecord.otpId = otpId;
     emailRateCache.set(email, eRecord);
 
+    const isMock = !process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes('re_your_resend_api_key') || process.env.RESEND_API_KEY === '';
+
     return sendSuccess(res, {
       success: true,
       otpId,
-      expiresIn
+      expiresIn,
+      ...(isMock && { mockOtp: otpCode })
     }, 'Email OTP sent successfully');
   } catch (err) {
     return sendError(res, 'Failed to send Email OTP', 500, err.message);
@@ -421,4 +458,25 @@ const checkEmailSession = async (req, res) => {
   }
 };
 
-module.exports = { register, login, getMe, sendOtp, verifyOtp, checkPhoneSession, sendEmailOtp, verifyEmailOtp, checkEmailSession };
+/**
+ * GET /api/auth/check-email-exists
+ */
+const checkEmailExists = async (req, res) => {
+  try {
+    const { email } = req.query;
+    if (!email) {
+      return sendError(res, 'Email parameter is required', 400);
+    }
+
+    const formattedEmail = email.trim().toLowerCase();
+    const existingUser = await prisma.user.findFirst({
+      where: { email: formattedEmail }
+    });
+
+    return sendSuccess(res, { exists: !!existingUser }, 'Email availability checked');
+  } catch (err) {
+    return sendError(res, 'Failed to check email availability', 500, err.message);
+  }
+};
+
+export { register, login, getMe, sendOtp, verifyOtp, checkPhoneSession, sendEmailOtp, verifyEmailOtp, checkEmailSession, checkEmailExists };

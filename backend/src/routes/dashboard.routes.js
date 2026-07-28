@@ -1,9 +1,9 @@
-const { Router } = require('express');
-const { getShopkeeperDashboard } = require('../controllers/dashboard.controller');
-const { authenticate, authorize } = require('../middleware/auth.middleware');
+import { Router } from 'express';
+import { getShopkeeperDashboard } from '../controllers/dashboard.controller.js';
+import { authenticate, authorize } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
 router.get('/shopkeeper', authenticate, authorize('SHOPKEEPER'), getShopkeeperDashboard);
 
-module.exports = router;
+export default router;

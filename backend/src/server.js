@@ -1,21 +1,21 @@
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const { createServer } = require('http');
-const { Server: SocketIOServer } = require('socket.io');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
 
-const { connectDB } = require('./config/db');
-const { logger } = require('./utils/logger');
-const { setIO } = require('./config/socket');
-const { errorHandler, notFoundHandler } = require('./middleware/error.middleware');
+import { connectDB } from './config/db.js';
+import { logger } from './utils/logger.js';
+import { setIO } from './config/socket.js';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
 
 // Routes
-const authRoutes = require('./routes/auth.routes');
-const shopRoutes = require('./routes/shop.routes');
-const productRoutes = require('./routes/product.routes');
-const orderRoutes = require('./routes/order.routes');
-const deliveryRoutes = require('./routes/delivery.routes');
-const dashboardRoutes = require('./routes/dashboard.routes');
+import authRoutes from './routes/auth.routes.js';
+import shopRoutes from './routes/shop.routes.js';
+import productRoutes from './routes/product.routes.js';
+import orderRoutes from './routes/order.routes.js';
+import deliveryRoutes from './routes/delivery.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 
 dotenv.config();
 

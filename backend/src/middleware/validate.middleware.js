@@ -1,11 +1,11 @@
-const { sendError } = require('../utils/response');
+import { sendError } from '../utils/response.js';
 
 /**
  * Zod validation middleware factory.
  * Validates req.body against the provided Zod schema.
  * Returns 422 with field-level errors on failure.
  */
-const validate = (schema) => {
+export const validate = (schema) => {
   return (req, res, next) => {
     const result = schema.safeParse(req.body);
     if (!result.success) {
@@ -19,5 +19,3 @@ const validate = (schema) => {
     next();
   };
 };
-
-module.exports = { validate };

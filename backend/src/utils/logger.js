@@ -7,7 +7,7 @@ const LOG_LEVELS = {
 
 const timestamp = () => new Date().toISOString();
 
-const logger = {
+export const logger = {
   info: (msg, ...args) =>
     console.log(`${LOG_LEVELS.info} ${timestamp()}: ${msg}`, ...args),
   warn: (msg, ...args) =>
@@ -20,5 +20,3 @@ const logger = {
     }
   },
 };
-
-module.exports = { logger };

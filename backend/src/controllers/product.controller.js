@@ -1,5 +1,5 @@
-const { prisma } = require('../config/db');
-const { sendSuccess, sendError } = require('../utils/response');
+import { prisma } from '../config/db.js';
+import { sendSuccess, sendError } from '../utils/response.js';
 
 // Helper: get shopId for the authenticated user
 const getShopId = async (userId) => {
@@ -166,7 +166,7 @@ const getInventoryLogs = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getProducts,
   createProduct,
   getProductById,

@@ -1,10 +1,10 @@
-const { prisma } = require('../config/db');
-const { sendSuccess, sendError } = require('../utils/response');
+import { prisma } from '../config/db.js';
+import { sendSuccess, sendError } from '../utils/response.js';
 
 /**
  * GET /api/delivery/profile
  */
-const getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
   try {
     const dp = await prisma.deliveryPartner.findUnique({
       where: { userId: req.user.userId },
@@ -20,7 +20,7 @@ const getProfile = async (req, res) => {
 /**
  * PUT /api/delivery/profile
  */
-const updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
   try {
     const { vehicleType } = req.body;
     const dp = await prisma.deliveryPartner.update({
@@ -36,7 +36,7 @@ const updateProfile = async (req, res) => {
 /**
  * PUT /api/delivery/availability
  */
-const updateAvailability = async (req, res) => {
+export const updateAvailability = async (req, res) => {
   try {
     const { isAvailable } = req.body;
     const dp = await prisma.deliveryPartner.update({
@@ -52,7 +52,7 @@ const updateAvailability = async (req, res) => {
 /**
  * GET /api/delivery/earnings
  */
-const getEarnings = async (req, res) => {
+export const getEarnings = async (req, res) => {
   try {
     const dp = await prisma.deliveryPartner.findUnique({
       where: { userId: req.user.userId },
@@ -93,7 +93,7 @@ const getEarnings = async (req, res) => {
 /**
  * GET /api/delivery/dashboard
  */
-const getDeliveryDashboard = async (req, res) => {
+export const getDeliveryDashboard = async (req, res) => {
   try {
     const dp = await prisma.deliveryPartner.findUnique({
       where: { userId: req.user.userId },
@@ -145,5 +145,3 @@ const getDeliveryDashboard = async (req, res) => {
     return sendError(res, 'Failed to fetch dashboard', 500, err.message);
   }
 };
-
-module.exports = { getProfile, updateProfile, updateAvailability, getEarnings, getDeliveryDashboard };

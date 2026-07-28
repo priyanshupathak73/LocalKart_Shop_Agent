@@ -1,15 +1,15 @@
-const { Router } = require('express');
-const {
+import { Router } from 'express';
+import {
   getProducts,
   createProduct,
   getProductById,
   updateProduct,
   deleteProduct,
   getInventoryLogs,
-} = require('../controllers/product.controller');
-const { authenticate, authorize } = require('../middleware/auth.middleware');
-const { validate } = require('../middleware/validate.middleware');
-const { createProductSchema, updateProductSchema } = require('../schemas/product.schema');
+} from '../controllers/product.controller.js';
+import { authenticate, authorize } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { createProductSchema, updateProductSchema } from '../schemas/product.schema.js';
 
 const router = Router();
 
@@ -23,4 +23,4 @@ router.put('/:id', validate(updateProductSchema), updateProduct);
 router.delete('/:id', deleteProduct);
 router.get('/:id/inventory-logs', getInventoryLogs);
 
-module.exports = router;
+export default router;

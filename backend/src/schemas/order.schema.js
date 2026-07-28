@@ -1,6 +1,6 @@
-const { z } = require('zod');
+import { z } from 'zod';
 
-const createOrderSchema = z.object({
+export const createOrderSchema = z.object({
   shopId: z.string().cuid('Invalid shop ID'),
   customerName: z.string().min(2),
   customerPhone: z.string().min(10),
@@ -16,17 +16,11 @@ const createOrderSchema = z.object({
     .min(1, 'Order must have at least one item'),
 });
 
-const updateOrderStatusSchema = z.object({
+export const updateOrderStatusSchema = z.object({
   status: z.enum(['Pending', 'Accepted', 'PickedUp', 'InTransit', 'Delivered', 'Cancelled']),
   notes: z.string().optional(),
 });
 
-const deliveryAvailabilitySchema = z.object({
+export const deliveryAvailabilitySchema = z.object({
   isAvailable: z.boolean(),
 });
-
-module.exports = {
-  createOrderSchema,
-  updateOrderStatusSchema,
-  deliveryAvailabilitySchema,
-};

@@ -1,10 +1,10 @@
-const { prisma } = require('../config/db');
-const { sendSuccess, sendError } = require('../utils/response');
+import { prisma } from '../config/db.js';
+import { sendSuccess, sendError } from '../utils/response.js';
 
 /**
  * GET /api/dashboard/shopkeeper
  */
-const getShopkeeperDashboard = async (req, res) => {
+export const getShopkeeperDashboard = async (req, res) => {
   try {
     const shop = await prisma.shop.findUnique({
       where: { userId: req.user.userId },
@@ -66,5 +66,3 @@ const getShopkeeperDashboard = async (req, res) => {
     return sendError(res, 'Failed to fetch dashboard', 500, err.message);
   }
 };
-
-module.exports = { getShopkeeperDashboard };

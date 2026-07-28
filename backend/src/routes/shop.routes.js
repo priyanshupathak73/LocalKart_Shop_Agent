@@ -1,8 +1,8 @@
-const { Router } = require('express');
-const { getMyShop, updateShop } = require('../controllers/shop.controller');
-const { authenticate, authorize } = require('../middleware/auth.middleware');
-const { validate } = require('../middleware/validate.middleware');
-const { shopUpdateSchema } = require('../schemas/product.schema');
+import { Router } from 'express';
+import { getMyShop, updateShop } from '../controllers/shop.controller.js';
+import { authenticate, authorize } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { shopUpdateSchema } from '../schemas/product.schema.js';
 
 const router = Router();
 
@@ -12,4 +12,4 @@ router.use(authenticate, authorize('SHOPKEEPER'));
 router.get('/my-shop', getMyShop);
 router.put('/update', validate(shopUpdateSchema), updateShop);
 
-module.exports = router;
+export default router;

@@ -1,5 +1,5 @@
-const { PrismaClient } = require('@prisma/client');
-const { logger } = require('../utils/logger');
+import { PrismaClient } from '@prisma/client';
+import { logger } from '../utils/logger.js';
 
 // Singleton: prevent multiple instances in dev (nodemon hot-reload safe)
 if (!global.__prisma) {
@@ -8,9 +8,9 @@ if (!global.__prisma) {
   });
 }
 
-const prisma = global.__prisma;
+export const prisma = global.__prisma;
 
-const connectDB = async () => {
+export const connectDB = async () => {
   try {
     await prisma.$connect();
     logger.info('PostgreSQL connected via Prisma');
@@ -19,5 +19,3 @@ const connectDB = async () => {
     process.exit(1);
   }
 };
-
-module.exports = { prisma, connectDB };

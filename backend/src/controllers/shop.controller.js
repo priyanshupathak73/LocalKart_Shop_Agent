@@ -1,10 +1,10 @@
-const { prisma } = require('../config/db');
-const { sendSuccess, sendError } = require('../utils/response');
+import { prisma } from '../config/db.js';
+import { sendSuccess, sendError } from '../utils/response.js';
 
 /**
  * GET /api/shop/my-shop
  */
-const getMyShop = async (req, res) => {
+export const getMyShop = async (req, res) => {
   try {
     const shop = await prisma.shop.findUnique({
       where: { userId: req.user.userId },
@@ -22,7 +22,7 @@ const getMyShop = async (req, res) => {
 /**
  * PUT /api/shop/update
  */
-const updateShop = async (req, res) => {
+export const updateShop = async (req, res) => {
   try {
     const shop = await prisma.shop.findUnique({ where: { userId: req.user.userId } });
     if (!shop) return sendError(res, 'Shop not found', 404);
@@ -36,5 +36,3 @@ const updateShop = async (req, res) => {
     return sendError(res, 'Failed to update shop', 500, err.message);
   }
 };
-
-module.exports = { getMyShop, updateShop };

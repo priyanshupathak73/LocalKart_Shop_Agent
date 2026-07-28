@@ -1,14 +1,14 @@
-const { Router } = require('express');
-const {
+import { Router } from 'express';
+import {
   getProfile,
   updateProfile,
   updateAvailability,
   getEarnings,
   getDeliveryDashboard,
-} = require('../controllers/delivery.controller');
-const { authenticate, authorize } = require('../middleware/auth.middleware');
-const { validate } = require('../middleware/validate.middleware');
-const { deliveryAvailabilitySchema } = require('../schemas/order.schema');
+} from '../controllers/delivery.controller.js';
+import { authenticate, authorize } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { deliveryAvailabilitySchema } from '../schemas/order.schema.js';
 
 const router = Router();
 
@@ -21,4 +21,4 @@ router.put('/availability', validate(deliveryAvailabilitySchema), updateAvailabi
 router.get('/earnings', getEarnings);
 router.get('/dashboard', getDeliveryDashboard);
 
-module.exports = router;
+export default router;

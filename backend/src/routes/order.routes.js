@@ -1,5 +1,5 @@
-const { Router } = require('express');
-const {
+import { Router } from 'express';
+import {
   getOrderById,
   getShopOrders,
   acceptOrder,
@@ -8,10 +8,10 @@ const {
   getDeliveryOrders,
   pickupOrder,
   updateDeliveryStatus,
-} = require('../controllers/order.controller');
-const { authenticate, authorize } = require('../middleware/auth.middleware');
-const { validate } = require('../middleware/validate.middleware');
-const { updateOrderStatusSchema } = require('../schemas/order.schema');
+} from '../controllers/order.controller.js';
+import { authenticate, authorize } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
+import { updateOrderStatusSchema } from '../schemas/order.schema.js';
 
 const router = Router();
 
@@ -35,4 +35,4 @@ router.put(
   updateDeliveryStatus
 );
 
-module.exports = router;
+export default router;

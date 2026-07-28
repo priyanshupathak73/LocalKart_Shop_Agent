@@ -1,6 +1,6 @@
-const { prisma } = require('../config/db');
-const { sendSuccess, sendError } = require('../utils/response');
-const { getIO } = require('../config/socket');
+import { prisma } from '../config/db.js';
+import { sendSuccess, sendError } from '../utils/response.js';
+import { getIO } from '../config/socket.js';
 
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
@@ -237,7 +237,7 @@ const updateDeliveryStatus = async (req, res) => {
   }
 };
 
-module.exports = {
+export {
   getOrderById,
   getShopOrders,
   acceptOrder,

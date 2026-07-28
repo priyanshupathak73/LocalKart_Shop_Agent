@@ -1,10 +1,10 @@
-const { verifyToken } = require('../utils/jwt');
-const { sendError } = require('../utils/response');
+import { verifyToken } from '../utils/jwt.js';
+import { sendError } from '../utils/response.js';
 
 /**
  * Verifies JWT and attaches decoded payload to req.user
  */
-const authenticate = (req, res, next) => {
+export const authenticate = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -23,7 +23,7 @@ const authenticate = (req, res, next) => {
  * RBAC — restrict route to specific roles.
  * Usage: authorize('SHOPKEEPER') or authorize('SHOPKEEPER', 'DELIVERY_PARTNER')
  */
-const authorize = (...roles) => {
+export const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
       return sendError(res, 'Not authenticated', 401);
@@ -38,5 +38,3 @@ const authorize = (...roles) => {
     next();
   };
 };
-
-module.exports = { authenticate, authorize };
