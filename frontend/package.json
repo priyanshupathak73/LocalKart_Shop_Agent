@@ -9,19 +9,20 @@
     "start": "node scripts/run-start.js",
     "lint": "next lint"
   },
+  
   "dependencies": {
     "framer-motion": "^12.42.0",
-    "lucide-react": "^0.368.0",
-    "next": "^15.1.0",
+    "lucide-react": "^1.28.0",
+    "next": "^16.2.12",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "autoprefixer": "^10.4.19",
     "eslint": "^10.8.0",
     "eslint-config-next": "^16.2.12",
+    "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3"
   }
