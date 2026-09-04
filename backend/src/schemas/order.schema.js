@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const createOrderSchema = z.object({
-  shopId: z.string().cuid('Invalid shop ID'),
+  shopId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid shop ID'),
   customerName: z.string().min(2),
   customerPhone: z.string().min(10),
   deliveryAddress: z.string().min(10),
@@ -9,7 +9,7 @@ export const createOrderSchema = z.object({
   items: z
     .array(
       z.object({
-        productId: z.string().cuid('Invalid product ID'),
+        productId: z.string().regex(/^[0-9a-fA-F]{24}$/, 'Invalid product ID'),
         quantity: z.number().int().positive('Quantity must be at least 1'),
       })
     )

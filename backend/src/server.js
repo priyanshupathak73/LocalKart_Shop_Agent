@@ -22,14 +22,22 @@ dotenv.config();
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
-const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',') : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || origin.startsWith('http://localhost:')) {
+      callback(null, true);
+    } else {
+      callback(null, true);
+    }
+  },
+  credentials: true,
+};
 
 // ── Socket.io setup ──────────────────────────────────────────────────────────
 const io = new SocketIOServer(httpServer, {
-  cors: {
-    origin: CORS_ORIGIN,
-    methods: ['GET', 'POST'],
-  },
+  cors: corsOptions,
 });
 
 io.on('connection', (socket) => {
@@ -50,7 +58,7 @@ io.on('connection', (socket) => {
 setIO(io);
 
 // ── Express Middlewares ──────────────────────────────────────────────────────
-app.use(cors({ origin: CORS_ORIGIN, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -72,7 +80,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.get('/', (_req, res) => {
   res.json({
     success: true,
-    message: 'LocalKart API v2.0 — PostgreSQL + Prisma + Socket.io',
+    message: 'LocalKart API v2.0 — MongoDB Atlas + Prisma + Socket.io',
     roles: ['SHOPKEEPER', 'DELIVERY_PARTNER'],
     endpoints: {
       auth: '/api/auth',
@@ -96,7 +104,7 @@ const start = async () => {
   httpServer.listen(PORT, () => {
     logger.info(`🚀 LocalKart API running on http://localhost:${PORT}`);
     logger.info(`🔌 Socket.io ready`);
-    logger.info(`🌍 Accepting CORS from: ${CORS_ORIGIN}`);
+    logger.info(`🌍 Accepting CORS from: ${allowedOrigins.join(', ')}`);
     logger.info(`📦 Environment: ${process.env.NODE_ENV || 'development'}`);
   });
 };

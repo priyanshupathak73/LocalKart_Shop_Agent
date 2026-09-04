@@ -13,7 +13,7 @@ export const prisma = global.__prisma;
 export const connectDB = async () => {
   try {
     await prisma.$connect();
-    logger.info('PostgreSQL connected via Prisma');
+    logger.info('MongoDB Atlas connected via Prisma');
   } catch (err) {
     logger.error('Database connection failed:', err);
     process.exit(1);

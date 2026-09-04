@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { Plus, Edit2, Trash2, Search, X } from 'lucide-react';
+import AddProductModal from './AddProductModal';
 
 export const Products = () => {
   const products = useStore((state) => state.products);
@@ -157,101 +158,21 @@ export const Products = () => {
 
       {/* Add / Edit Product Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in duration-200">
-            <div className="px-6 py-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
-              <h3 className="font-bold text-slate-800 font-heading">
-                {editingProduct ? 'Edit Product Details' : 'Add New Catalog Item'}
-              </h3>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 rounded-lg transition-all"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSave} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Product Name
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Organic Mustard Oil 1L"
-                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#10B981] focus:bg-white focus:ring-1 focus:ring-[#10B981]/30 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none transition-all"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Price (₹)
-                  </label>
-                  <input
-                    type="number"
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                    placeholder="250"
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-[#10B981] focus:bg-white focus:ring-1 focus:ring-[#10B981]/30 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none transition-all"
-                    required
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                    Initial Stock
-                  </label>
-                  <input
-                    type="number"
-                    value={stock}
-                    onChange={(e) => setStock(e.target.value)}
-                    placeholder="15"
-                    className="w-full bg-slate-50 border border-slate-200 focus:border-[#10B981] focus:bg-white focus:ring-1 focus:ring-[#10B981]/30 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none transition-all"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                  Category
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 focus:border-[#10B981] focus:bg-white focus:ring-1 focus:ring-[#10B981]/30 rounded-xl px-4 py-2.5 text-sm text-slate-800 outline-none transition-all"
-                >
-                  <option value="Grains">Grains</option>
-                  <option value="Dairy">Dairy</option>
-                  <option value="Pulses">Pulses</option>
-                  <option value="Bakery">Bakery</option>
-                  <option value="Vegetables">Vegetables</option>
-                  <option value="Dry Fruits">Dry Fruits</option>
-                  <option value="Spices">Spices</option>
-                </select>
-              </div>
-
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-xl text-sm font-medium transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="bg-[#10B981] hover:bg-[#059669] text-white px-5 py-2 rounded-xl text-sm font-bold transition-all shadow-md shadow-emerald-500/10"
-                >
-                  Save Item
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+        <AddProductModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          onPublishSuccess={(productData) => {
+            if (productData) {
+              addProduct({
+                name: productData.productName,
+                price: parseFloat(productData.sellingPrice || 0),
+                stock: parseInt(productData.stockQuantity || 0, 10),
+                category: productData.category || 'Grocery',
+              });
+            }
+            setIsModalOpen(false);
+          }}
+        />
       )}
     </div>
   );

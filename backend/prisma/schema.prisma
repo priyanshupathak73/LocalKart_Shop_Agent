@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
@@ -15,7 +15,7 @@ datasource db {
 // ──────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   email     String   @unique
   password  String
   name      String
@@ -32,8 +32,8 @@ model User {
 }
 
 model Shop {
-  id          String   @id @default(cuid())
-  userId      String   @unique
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @unique @db.ObjectId
   name        String
   description String?
   address     String
@@ -52,8 +52,8 @@ model Shop {
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  shopId      String
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  shopId      String   @db.ObjectId
   name        String
   description String?
   price       Float
@@ -73,8 +73,8 @@ model Product {
 }
 
 model InventoryLog {
-  id           String   @id @default(cuid())
-  productId    String
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId    String   @db.ObjectId
   changeAmount Int      // positive = added, negative = reduced
   reason       String
   stockBefore  Int
@@ -88,8 +88,8 @@ model InventoryLog {
 }
 
 model DeliveryPartner {
-  id               String   @id @default(cuid())
-  userId           String   @unique
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId           String   @unique @db.ObjectId
   vehicleType      String   @default("MOTORCYCLE") // "BICYCLE", "MOTORCYCLE", "CAR", "AUTO"
   isAvailable      Boolean  @default(false)
   rating           Float    @default(5.0)
@@ -106,9 +106,9 @@ model DeliveryPartner {
 }
 
 model Order {
-  id                String   @id @default(cuid())
-  shopId            String
-  deliveryPartnerId String?
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  shopId            String   @db.ObjectId
+  deliveryPartnerId String?  @db.ObjectId
   status            String   @default("Pending") // "Pending", "Accepted", "PickedUp", "InTransit", "Delivered", "Cancelled"
   totalAmount       Float
   deliveryFee       Float    @default(40.0)
@@ -128,9 +128,9 @@ model Order {
 }
 
 model OrderItem {
-  id        String @id @default(cuid())
-  orderId   String
-  productId String
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  orderId   String @db.ObjectId
+  productId String @db.ObjectId
   quantity  Int
   unitPrice Float
 
