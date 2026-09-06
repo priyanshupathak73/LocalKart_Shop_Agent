@@ -1,6 +1,28 @@
 import { useAuthStore } from '../store/useAuthStore';
 
-const BASE_URL = (typeof window !== 'undefined' ? window.ENV?.NEXT_PUBLIC_API_URL : null) || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const getBaseUrl = () => {
+  const envUrl = (typeof window !== 'undefined' ? window.ENV?.NEXT_PUBLIC_API_URL : null) || process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl) {
+    return envUrl.trim().replace(/\/+$/, '');
+  }
+  return 'http://localhost:5001/api';
+};
+
+export function getFullUrl(endpoint) {
+  if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+    return endpoint;
+  }
+  const baseUrl = getBaseUrl();
+  let path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+
+  if (baseUrl.endsWith('/api') && path.startsWith('/api/')) {
+    path = path.substring(4);
+  } else if (!baseUrl.endsWith('/api') && !path.startsWith('/api/')) {
+    path = `/api${path}`;
+  }
+
+  return `${baseUrl}${path}`;
+}
 
 async function request(endpoint, options = {}) {
   const token = useAuthStore.getState().token;
@@ -11,7 +33,7 @@ async function request(endpoint, options = {}) {
     ...options.headers,
   };
 
-  const url = endpoint.startsWith('http') ? endpoint : `${BASE_URL}${endpoint}`;
+  const url = getFullUrl(endpoint);
 
   const config = {
     ...options,

@@ -1,51 +1,95 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
-import { Search, Save, AlertTriangle, Plus, Minus } from 'lucide-react';
+import API from '../../api/api';
+import { Search, Save, AlertTriangle, Plus, Minus, Loader2, RefreshCw } from 'lucide-react';
 
 export const Inventory = () => {
-  const products = useStore((state) => state.products);
+  const storeProducts = useStore((state) => state.products);
   const updateProductStock = useStore((state) => state.updateProductStock);
+  
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   
-  // Track temporary stock inputs to avoid editing direct state on every key stroke
+  // Track temporary stock inputs
   const [tempStock, setTempStock] = useState({});
 
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const res = await API.get('/products');
+      const apiData = res.data.data || (Array.isArray(res.data) ? res.data : null);
+      if (apiData && Array.isArray(apiData)) {
+        const formatted = apiData.map(p => ({
+          id: p.id || p._id,
+          name: p.name,
+          category: p.category || 'General',
+          price: p.price,
+          stock: p.stock !== undefined ? p.stock : 0,
+          rawProduct: p
+        }));
+        setProducts(formatted);
+      } else {
+        setProducts(storeProducts);
+      }
+    } catch (err) {
+      console.warn('Backend API inventory fetch warning, fallback to local store:', err.message);
+      setProducts(storeProducts);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
   const handleStockChange = (id, val) => {
-    setTempStock({
-      ...tempStock,
+    setTempStock(prev => ({
+      ...prev,
       [id]: val,
-    });
+    }));
   };
 
   const handleIncrement = (id, currentStock) => {
     const activeVal = tempStock[id] !== undefined ? tempStock[id] : currentStock;
     const newVal = parseInt(activeVal) + 1;
     handleStockChange(id, newVal);
-    updateProductStock(id, newVal);
   };
 
   const handleDecrement = (id, currentStock) => {
     const activeVal = tempStock[id] !== undefined ? tempStock[id] : currentStock;
     const newVal = Math.max(0, parseInt(activeVal) - 1);
     handleStockChange(id, newVal);
-    updateProductStock(id, newVal);
   };
 
-  const handleSaveStock = (id) => {
+  const handleSaveStock = async (id) => {
     if (tempStock[id] !== undefined) {
-      updateProductStock(id, tempStock[id]);
-      // Remove from temp values
-      const updatedTemp = { ...tempStock };
-      delete updatedTemp[id];
-      setTempStock(updatedTemp);
+      const newStock = tempStock[id];
+      setSavingId(id);
+      try {
+        await API.put(`/products/${id}`, { stock: newStock });
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, stock: newStock } : p));
+        updateProductStock(id, newStock);
+      } catch (err) {
+        console.warn('Update stock API warning:', err.message);
+        setProducts(prev => prev.map(p => p.id === id ? { ...p, stock: newStock } : p));
+        updateProductStock(id, newStock);
+      } finally {
+        const updatedTemp = { ...tempStock };
+        delete updatedTemp[id];
+        setTempStock(updatedTemp);
+        setSavingId(null);
+      }
     }
   };
 
   const filteredProducts = products.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchTerm.toLowerCase())
+    (p.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (p.category || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -56,6 +100,15 @@ export const Inventory = () => {
           <h1 className="text-xl font-bold font-heading text-slate-800">Inventory Stock Controller</h1>
           <p className="text-xs text-slate-400">Quickly adjust stock quantities and manage warehouse replenishments.</p>
         </div>
+
+        <button
+          onClick={fetchProducts}
+          disabled={loading}
+          className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+          title="Refresh catalog"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       {/* Main Stock Editor Panel */}
@@ -73,7 +126,12 @@ export const Inventory = () => {
         </div>
 
         {/* Table list */}
-        {filteredProducts.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-12 border border-slate-100 rounded-2xl space-y-2">
+            <Loader2 className="w-6 h-6 animate-spin text-[#10B981] mx-auto" />
+            <p className="text-slate-400 text-xs">Fetching inventory stock from server...</p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-12 border border-dashed border-slate-200 rounded-2xl">
             <p className="text-slate-400 text-sm">No items found matching "{searchTerm}"</p>
           </div>
@@ -94,6 +152,7 @@ export const Inventory = () => {
                   const currentInputValue = tempStock[p.id] !== undefined ? tempStock[p.id] : p.stock;
                   const isLowStock = p.stock < 10;
                   const hasChanges = tempStock[p.id] !== undefined && tempStock[p.id] !== p.stock;
+                  const isSaving = savingId === p.id;
 
                   return (
                     <tr key={p.id} className={`transition-colors ${isLowStock ? 'bg-amber-50/20 hover:bg-amber-50/30' : 'hover:bg-slate-50/50'}`}>
@@ -125,7 +184,7 @@ export const Inventory = () => {
                           <button
                             type="button"
                             onClick={() => handleDecrement(p.id, p.stock)}
-                            className="p-1 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-all"
+                            className="p-1 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-all cursor-pointer"
                           >
                             <Minus className="w-3.5 h-3.5" />
                           </button>
@@ -140,7 +199,7 @@ export const Inventory = () => {
                           <button
                             type="button"
                             onClick={() => handleIncrement(p.id, p.stock)}
-                            className="p-1 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-all"
+                            className="p-1 border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-lg transition-all cursor-pointer"
                           >
                             <Plus className="w-3.5 h-3.5" />
                           </button>
@@ -151,16 +210,16 @@ export const Inventory = () => {
                         <button
                           type="button"
                           onClick={() => handleSaveStock(p.id)}
-                          disabled={!hasChanges}
+                          disabled={!hasChanges || isSaving}
                           className={`
-                            px-3 py-1.5 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1
-                            ${hasChanges 
+                            px-3 py-1.5 rounded-xl text-xs font-bold transition-all inline-flex items-center gap-1 cursor-pointer
+                            ${hasChanges && !isSaving
                               ? 'bg-[#10B981] text-white hover:bg-[#059669] shadow-sm' 
                               : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                             }
                           `}
                         >
-                          <Save className="w-3.5 h-3.5" /> Save
+                          {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />} Save
                         </button>
                       </td>
                     </tr>
@@ -174,3 +233,4 @@ export const Inventory = () => {
     </div>
   );
 };
+

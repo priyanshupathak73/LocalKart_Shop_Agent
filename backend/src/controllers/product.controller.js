@@ -1,6 +1,9 @@
 import { prisma } from '../config/db.js';
 import { sendSuccess, sendError } from '../utils/response.js';
 
+// Helper to check valid 24-hex ObjectId string
+const isValidObjectId = (id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
+
 // Helper: get shopId for the authenticated user
 const getShopId = async (userId) => {
   const shop = await prisma.shop.findUnique({ where: { userId }, select: { id: true } });
@@ -83,6 +86,9 @@ const createProduct = async (req, res) => {
  */
 const getProductById = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     const shopId = await getShopId(req.user.userId);
     const product = await prisma.product.findFirst({
       where: { id: req.params.id, ...(shopId && { shopId }) },
@@ -93,6 +99,9 @@ const getProductById = async (req, res) => {
     if (!product) return sendError(res, 'Product not found', 404);
     return sendSuccess(res, product, 'Product fetched');
   } catch (err) {
+    if (err.code === 'P2023' || err.name === 'BSONError') {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     return sendError(res, 'Failed to fetch product', 500, err.message);
   }
 };
@@ -102,6 +111,9 @@ const getProductById = async (req, res) => {
  */
 const updateProduct = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     const shopId = await getShopId(req.user.userId);
     const existing = await prisma.product.findFirst({
       where: { id: req.params.id, ...(shopId && { shopId }) },
@@ -128,6 +140,9 @@ const updateProduct = async (req, res) => {
     });
     return sendSuccess(res, updated, 'Product updated');
   } catch (err) {
+    if (err.code === 'P2023' || err.name === 'BSONError') {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     return sendError(res, 'Failed to update product', 500, err.message);
   }
 };
@@ -137,6 +152,9 @@ const updateProduct = async (req, res) => {
  */
 const deleteProduct = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     const shopId = await getShopId(req.user.userId);
     const existing = await prisma.product.findFirst({
       where: { id: req.params.id, ...(shopId && { shopId }) },
@@ -146,6 +164,9 @@ const deleteProduct = async (req, res) => {
     await prisma.product.delete({ where: { id: req.params.id } });
     return sendSuccess(res, { id: req.params.id }, 'Product deleted successfully');
   } catch (err) {
+    if (err.code === 'P2023' || err.name === 'BSONError') {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     return sendError(res, 'Failed to delete product', 500, err.message);
   }
 };
@@ -155,6 +176,9 @@ const deleteProduct = async (req, res) => {
  */
 const getInventoryLogs = async (req, res) => {
   try {
+    if (!isValidObjectId(req.params.id)) {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     const logs = await prisma.inventoryLog.findMany({
       where: { productId: req.params.id },
       orderBy: { createdAt: 'desc' },
@@ -162,6 +186,9 @@ const getInventoryLogs = async (req, res) => {
     });
     return sendSuccess(res, logs, 'Inventory logs fetched');
   } catch (err) {
+    if (err.code === 'P2023' || err.name === 'BSONError') {
+      return sendError(res, 'Invalid product ID format', 400);
+    }
     return sendError(res, 'Failed to fetch logs', 500, err.message);
   }
 };

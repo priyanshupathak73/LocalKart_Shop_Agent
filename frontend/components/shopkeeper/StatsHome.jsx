@@ -1,17 +1,54 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStore } from '../../store/useStore';
+import API from '../../api/api';
 import { IndianRupee, ShoppingCart, AlertTriangle, Star, ArrowUpRight, TrendingUp } from 'lucide-react';
 
 export const StatsHome = ({ setActiveTab }) => {
   const products = useStore((state) => state.products);
   const orders = useStore((state) => state.orders);
+  const setProducts = useStore((state) => state.setProducts);
+  const setOrders = useStore((state) => state.setOrders);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [ordersRes, productsRes] = await Promise.all([
+          API.get('/orders').catch(() => ({ data: [] })),
+          API.get('/products').catch(() => ({ data: [] }))
+        ]);
+        if (Array.isArray(ordersRes.data)) {
+          setOrders(ordersRes.data.map(o => ({
+            id: o.id || o._id,
+            customerName: o.customerName || 'Customer',
+            items: Array.isArray(o.items) ? o.items.map(i => `${i.name} (x${i.quantity})`).join(', ') : 'Items',
+            total: o.totalAmount || o.total || 0,
+            status: o.status || 'Pending',
+            date: o.createdAt ? new Date(o.createdAt).toLocaleDateString() : 'Today'
+          })));
+        }
+        if (Array.isArray(productsRes.data)) {
+          setProducts(productsRes.data.map(p => ({
+            id: p.id || p._id,
+            name: p.name,
+            price: p.price,
+            stock: p.stock ?? p.stockQuantity ?? 0,
+            category: p.category || 'General',
+            image: p.image || '/placeholder.jpg'
+          })));
+        }
+      } catch (err) {
+        console.error('Error loading stats data:', err);
+      }
+    };
+    fetchData();
+  }, [setOrders, setProducts]);
 
   // Math metrics
   const totalSales = orders
     .filter(o => o.status === 'Delivered')
-    .reduce((sum, o) => sum + o.total, 0) + 12450; // Add standard starting base revenue
+    .reduce((sum, o) => sum + (o.total || 0), 0);
 
   const pendingOrders = orders.filter(o => o.status !== 'Delivered').length;
   const lowStockCount = products.filter(p => p.stock < 10).length;
@@ -20,8 +57,6 @@ export const StatsHome = ({ setActiveTab }) => {
   const recentOrders = orders.slice(0, 3);
 
   // SVG Chart Mock Coordinates
-  // Mon, Tue, Wed, Thu, Fri, Sat, Sun
-  // Values: 1200, 1900, 1500, 2800, 2400, 3800, 4200
   const chartPoints = [
     { label: 'Mon', val: 1200 },
     { label: 'Tue', val: 1900 },
@@ -32,11 +67,10 @@ export const StatsHome = ({ setActiveTab }) => {
     { label: 'Sun', val: 4200 }
   ];
 
-  // Map values to Y coordinates (max val 5000 = y: 30, min val 0 = y: 170)
+  // Map values to Y coordinates
   const mapY = (val) => 170 - (val / 5000) * 140;
   const pathPoints = chartPoints.map((pt, i) => `${40 + i * 80},${mapY(pt.val)}`);
   
-  // Create bezier curve smooth path
   let pathD = `M ${pathPoints[0]}`;
   for (let i = 1; i < pathPoints.length; i++) {
     const [prevX, prevY] = pathPoints[i-1].split(',').map(Number);
@@ -48,7 +82,6 @@ export const StatsHome = ({ setActiveTab }) => {
     pathD += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${currX},${currY}`;
   }
 
-  // Create area fill path
   const areaD = `${pathD} L 520,180 L 40,180 Z`;
 
   return (
@@ -69,12 +102,12 @@ export const StatsHome = ({ setActiveTab }) => {
               <IndianRupee className="w-6 h-6" />
             </span>
             <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" /> +12%
+              <TrendingUp className="w-3 h-3" /> Live
             </span>
           </div>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
           <h3 className="text-2xl font-bold font-heading text-slate-800 mt-1">₹{totalSales.toLocaleString()}</h3>
-          <p className="text-[11px] text-slate-400 mt-1.5">Includes mock base index</p>
+          <p className="text-[11px] text-slate-400 mt-1.5">Calculated from delivered orders</p>
         </div>
 
         {/* KPI 2 */}
@@ -124,7 +157,7 @@ export const StatsHome = ({ setActiveTab }) => {
           </div>
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Store Rating</p>
           <h3 className="text-2xl font-bold font-heading text-slate-800 mt-1">4.8 <span className="text-xs text-slate-400">/ 5.0</span></h3>
-          <p className="text-[11px] text-slate-400 mt-1.5">Based on 84 customer reviews</p>
+          <p className="text-[11px] text-slate-400 mt-1.5">Based on customer reviews</p>
         </div>
       </div>
 
@@ -151,20 +184,15 @@ export const StatsHome = ({ setActiveTab }) => {
                 </linearGradient>
               </defs>
               
-              {/* Grid Lines */}
               <line x1="40" y1="30" x2="520" y2="30" stroke="#f1f5f9" strokeWidth="1" />
               <line x1="40" y1="65" x2="520" y2="65" stroke="#f1f5f9" strokeWidth="1" />
               <line x1="40" y1="100" x2="520" y2="100" stroke="#f1f5f9" strokeWidth="1" />
               <line x1="40" y1="135" x2="520" y2="135" stroke="#f1f5f9" strokeWidth="1" />
               <line x1="40" y1="170" x2="520" y2="170" stroke="#cbd5e1" strokeWidth="1.5" />
 
-              {/* Area Gradient Under Curve */}
               <path d={areaD} fill="url(#chartGrad)" />
-
-              {/* Spline Path */}
               <path d={pathD} fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" />
 
-              {/* Plot Nodes */}
               {chartPoints.map((pt, i) => {
                 const cx = 40 + i * 80;
                 const cy = mapY(pt.val);
@@ -178,7 +206,6 @@ export const StatsHome = ({ setActiveTab }) => {
                 );
               })}
 
-              {/* X Axis Labels */}
               {chartPoints.map((pt, i) => (
                 <text key={i} x={40 + i * 80} y="192" textAnchor="middle" className="text-[10px] font-semibold fill-slate-400">
                   {pt.label}
@@ -195,19 +222,23 @@ export const StatsHome = ({ setActiveTab }) => {
             <p className="text-xs text-slate-400 mb-4">Products currently running low on stock</p>
             
             <div className="space-y-3">
-              {products.filter(p => p.stock < 10).map((product) => (
-                <div key={product.id} className="flex justify-between items-center p-3 bg-rose-50/50 hover:bg-rose-50 border border-rose-100 rounded-xl transition-all">
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-800">{product.name}</h5>
-                    <p className="text-[10px] text-slate-400 font-semibold">{product.category}</p>
+              {products.filter(p => p.stock < 10).length === 0 ? (
+                <p className="text-xs text-slate-400 italic py-4 text-center">No low stock items</p>
+              ) : (
+                products.filter(p => p.stock < 10).map((product) => (
+                  <div key={product.id} className="flex justify-between items-center p-3 bg-rose-50/50 hover:bg-rose-50 border border-rose-100 rounded-xl transition-all">
+                    <div>
+                      <h5 className="text-xs font-bold text-slate-800">{product.name}</h5>
+                      <p className="text-[10px] text-slate-400 font-semibold">{product.category}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                        {product.stock} left
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                      {product.stock} left
-                    </span>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
           
@@ -247,25 +278,33 @@ export const StatsHome = ({ setActiveTab }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {recentOrders.map((order) => (
-                <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                  <td className="py-3.5 px-4 font-heading font-semibold text-slate-800 text-xs">{order.id}</td>
-                  <td className="py-3.5 px-4 text-slate-700 font-medium">{order.customerName}</td>
-                  <td className="py-3.5 px-4 text-slate-500 truncate max-w-[200px]">{order.items}</td>
-                  <td className="py-3.5 px-4 text-right font-bold text-slate-800">₹{order.total}</td>
-                  <td className="py-3.5 px-4 text-center">
-                    <span className={`
-                      inline-block text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border
-                      ${order.status === 'Pending' && 'bg-amber-50 text-amber-700 border-amber-200'}
-                      ${order.status === 'Preparing' && 'bg-blue-50 text-blue-700 border-blue-200'}
-                      ${order.status === 'Out for Delivery' && 'bg-purple-50 text-purple-700 border-purple-200'}
-                      ${order.status === 'Delivered' && 'bg-emerald-50 text-emerald-700 border-emerald-200'}
-                    `}>
-                      {order.status}
-                    </span>
+              {recentOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="py-6 text-center text-slate-400 text-xs font-semibold">
+                    No orders yet
                   </td>
                 </tr>
-              ))}
+              ) : (
+                recentOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
+                    <td className="py-3.5 px-4 font-heading font-semibold text-slate-800 text-xs">{order.id}</td>
+                    <td className="py-3.5 px-4 text-slate-700 font-medium">{order.customerName}</td>
+                    <td className="py-3.5 px-4 text-slate-500 truncate max-w-[200px]">{order.items}</td>
+                    <td className="py-3.5 px-4 text-right font-bold text-slate-800">₹{order.total}</td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className={`
+                        inline-block text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border
+                        ${order.status === 'Pending' && 'bg-amber-50 text-amber-700 border-amber-200'}
+                        ${order.status === 'Preparing' && 'bg-blue-50 text-blue-700 border-blue-200'}
+                        ${order.status === 'Out for Delivery' && 'bg-purple-50 text-purple-700 border-purple-200'}
+                        ${order.status === 'Delivered' && 'bg-emerald-50 text-emerald-700 border-emerald-200'}
+                      `}>
+                        {order.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

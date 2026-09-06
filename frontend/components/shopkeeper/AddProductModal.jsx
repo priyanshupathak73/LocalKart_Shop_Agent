@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   X,
   Upload,
@@ -21,6 +21,7 @@ import {
   IndianRupee,
   Plus
 } from 'lucide-react';
+import API from '../../api/api';
 
 // Categories and dynamic subcategories mapping
 const CATEGORY_MAP = {
@@ -84,7 +85,7 @@ const DEMO_PRESET_IMAGES = [
   'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500&auto=format&fit=crop&q=80'
 ];
 
-export default function AddProductModal({ isOpen = true, onClose, onPublishSuccess }) {
+export default function AddProductModal({ isOpen = true, onClose, onPublishSuccess, editingProduct = null }) {
   // Active Sidebar Step (1..6)
   const [activeStep, setActiveStep] = useState(1);
 
@@ -116,7 +117,50 @@ export default function AddProductModal({ isOpen = true, onClose, onPublishSucce
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDraftSaved, setIsDraftSaved] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [touched, setTouched] = useState({});
+
+  useEffect(() => {
+    if (editingProduct) {
+      setFormData({
+        productName: editingProduct.name || '',
+        brand: editingProduct.brand || '',
+        category: editingProduct.category || '',
+        subcategory: editingProduct.subcategory || '',
+        sellingPrice: editingProduct.price !== undefined ? editingProduct.price.toString() : '',
+        mrp: editingProduct.mrp !== undefined ? editingProduct.mrp.toString() : '',
+        discount: '',
+        stockQuantity: editingProduct.stock !== undefined ? editingProduct.stock.toString() : '',
+        minStockAlert: '',
+        availability: editingProduct.isAvailable === false ? 'Out of Stock' : 'In Stock',
+        unit: editingProduct.unit || '',
+        weightQuantity: '',
+        unitType: '',
+        expiryDate: '',
+        description: editingProduct.description || '',
+      });
+      setImages(editingProduct.imageUrl ? [editingProduct.imageUrl] : []);
+    } else {
+      setFormData({
+        productName: '',
+        brand: '',
+        category: '',
+        subcategory: '',
+        sellingPrice: '',
+        mrp: '',
+        discount: '',
+        stockQuantity: '',
+        minStockAlert: '',
+        availability: 'In Stock',
+        unit: '',
+        weightQuantity: '',
+        unitType: '',
+        expiryDate: '',
+        description: '',
+      });
+      setImages([]);
+    }
+  }, [editingProduct]);
 
   // Navigation steps configuration
   const steps = [
@@ -225,18 +269,16 @@ export default function AddProductModal({ isOpen = true, onClose, onPublishSucce
 
   // Required Fields Check for Publish enablement
   const isValid = useMemo(() => {
-    const { productName, category, subcategory, sellingPrice, stockQuantity, unit } = formData;
+    const { productName, category, sellingPrice, stockQuantity } = formData;
     return (
       productName.trim().length >= 2 &&
       category.trim().length > 0 &&
-      subcategory.trim().length > 0 &&
       sellingPrice !== '' &&
       !isNaN(parseFloat(sellingPrice)) &&
       parseFloat(sellingPrice) >= 0 &&
       stockQuantity !== '' &&
       !isNaN(parseInt(stockQuantity, 10)) &&
-      parseInt(stockQuantity, 10) >= 0 &&
-      unit.trim().length > 0
+      parseInt(stockQuantity, 10) >= 0
     );
   }, [formData]);
 
@@ -247,17 +289,41 @@ export default function AddProductModal({ isOpen = true, onClose, onPublishSucce
   };
 
   // Handle Publish Product
-  const handlePublish = () => {
-    if (!isValid) return;
+  const handlePublish = async () => {
+    if (!isValid || isSubmitting) return;
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    setTimeout(() => {
+    const payload = {
+      name: formData.productName,
+      description: formData.description || '',
+      price: parseFloat(formData.sellingPrice),
+      stock: parseInt(formData.stockQuantity, 10),
+      category: formData.category,
+      imageUrl: images.length > 0 ? images[0] : '',
+      isAvailable: formData.availability === 'In Stock',
+    };
+
+    try {
+      let res;
+      if (editingProduct && editingProduct.id) {
+        res = await API.put(`/products/${editingProduct.id}`, payload);
+      } else {
+        res = await API.post('/products', payload);
+      }
+
+      const savedProduct = res.data.data;
       setIsSubmitting(false);
       setShowSuccessModal(true);
+
       if (onPublishSuccess) {
-        onPublishSuccess(formData);
+        onPublishSuccess(savedProduct, !!editingProduct);
       }
-    }, 1200);
+    } catch (err) {
+      setIsSubmitting(false);
+      const errMsg = err.response?.data?.message || err.message || 'Failed to publish product';
+      setSubmitError(errMsg);
+    }
   };
 
   if (!isOpen) return null;
@@ -277,7 +343,7 @@ export default function AddProductModal({ isOpen = true, onClose, onPublishSucce
                 eL
               </span>
               <h2 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">
-                Add New Product
+                {editingProduct ? 'Edit Product' : 'Add New Product'}
               </h2>
             </div>
             <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
@@ -1036,6 +1102,11 @@ export default function AddProductModal({ isOpen = true, onClose, onPublishSucce
           </button>
 
           <div className="flex items-center gap-3">
+            {submitError && (
+              <span className="text-xs font-bold text-red-600 bg-red-50 px-3 py-1.5 rounded-lg border border-red-200">
+                {submitError}
+              </span>
+            )}
             <button
               type="button"
               onClick={handleSaveDraft}
@@ -1057,12 +1128,12 @@ export default function AddProductModal({ isOpen = true, onClose, onPublishSucce
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin text-white" />
-                  <span>Publishing...</span>
+                  <span>{editingProduct ? 'Updating...' : 'Publishing...'}</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Publish Product</span>
+                  <span>{editingProduct ? 'Update Product' : 'Publish Product'}</span>
                 </>
               )}
             </button>

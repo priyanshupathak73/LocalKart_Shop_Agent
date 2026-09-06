@@ -1,41 +1,87 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useStore } from '../../store/useStore';
+import API from '../../api/api';
 import { Truck, MapPin, IndianRupee, Clock, ArrowRight, ShieldCheck, PlayCircle } from 'lucide-react';
 
 export const StatsHome = ({ setActiveTab }) => {
   const orders = useStore((state) => state.orders);
+  const setOrders = useStore((state) => state.setOrders);
   const storeActions = useStore();
+
+  useEffect(() => {
+    const fetchDeliveryData = async () => {
+      try {
+        const [availableRes, myOrdersRes] = await Promise.all([
+          API.get('/orders/delivery/available').catch(() => ({ data: [] })),
+          API.get('/orders/delivery/my-orders').catch(() => ({ data: [] }))
+        ]);
+        
+        const available = Array.isArray(availableRes.data) ? availableRes.data : [];
+        const myOrders = Array.isArray(myOrdersRes.data) ? myOrdersRes.data : [];
+        
+        const combined = [...myOrders, ...available].map(o => ({
+          id: o.id || o._id,
+          customerName: o.customerName || 'Customer',
+          address: o.customerAddress || o.address || 'Customer Address',
+          shopName: o.shopName || 'Local Shop',
+          shopAddress: o.shopAddress || 'Store Location',
+          items: Array.isArray(o.items) ? o.items.map(i => `${i.name} (x${i.quantity})`).join(', ') : 'Items',
+          total: o.totalAmount || o.total || 0,
+          deliveryFee: o.deliveryFee || 30,
+          status: o.status || 'Pending',
+          assigned: !!o.deliveryPartnerId
+        }));
+
+        setOrders(combined);
+      } catch (err) {
+        console.error('Error fetching delivery data:', err);
+      }
+    };
+    fetchDeliveryData();
+  }, [setOrders]);
 
   // Filter jobs
   const completedJobs = orders.filter((o) => o.status === 'Delivered');
   const activeJobs = orders.filter((o) => o.status === 'Accepted' || o.status === 'Preparing' || o.status === 'Out for Delivery');
-  const availableQueue = orders.filter((o) => o.status === 'Pending' || o.status === 'Confirmed');
+  const availableQueue = orders.filter((o) => !o.assigned && (o.status === 'Pending' || o.status === 'Confirmed' || o.status === 'Preparing'));
 
-  // Math earnings
+  // Real Math earnings
   const completedCount = completedJobs.length;
-  const todayEarnings = completedJobs.reduce((sum, o) => sum + o.deliveryFee, 0) + 160; // 160 index shift
+  const todayEarnings = completedJobs.reduce((sum, o) => sum + (o.deliveryFee || 0), 0);
 
-  // Find the single active tracking order
-  const activeOrder = orders.find((o) => o.status === 'Out for Delivery' || o.status === 'Preparing' || o.status === 'Confirmed' && o.assigned);
-  
-  // Or grab the first one that is "Out for Delivery" or "Preparing" as ongoing simulation
-  const ongoingOrder = activeOrder || orders.find((o) => o.status === 'Out for Delivery' || o.status === 'Preparing');
+  // Find active tracking order
+  const ongoingOrder = orders.find((o) => o.status === 'Out for Delivery' || o.status === 'Preparing' || (o.status === 'Confirmed' && o.assigned));
 
-  const handleUpdateStatus = (id, currentStatus) => {
+  const handleUpdateStatus = async (id, currentStatus) => {
     let nextStatus = '';
     if (currentStatus === 'Confirmed' || currentStatus === 'Preparing') nextStatus = 'Out for Delivery';
     else if (currentStatus === 'Out for Delivery') nextStatus = 'Delivered';
 
     if (nextStatus) {
-      storeActions.updateOrderStatus(id, nextStatus);
+      try {
+        if (nextStatus === 'Out for Delivery') {
+          await API.put(`/orders/${id}/pickup`);
+        } else {
+          await API.put(`/orders/${id}/status`, { status: 'Delivered' });
+        }
+        storeActions.updateOrderStatus(id, nextStatus);
+      } catch (err) {
+        console.error('Failed to update status:', err);
+        storeActions.updateOrderStatus(id, nextStatus);
+      }
     }
   };
 
-  const handleAcceptJob = (id) => {
-    // Transition job to Preparing (assigned/accepted)
-    storeActions.updateOrderStatus(id, 'Preparing');
+  const handleAcceptJob = async (id) => {
+    try {
+      await API.put(`/orders/${id}/accept`);
+      storeActions.updateOrderStatus(id, 'Preparing');
+    } catch (err) {
+      console.error('Failed to accept job:', err);
+      storeActions.updateOrderStatus(id, 'Preparing');
+    }
   };
 
   return (
@@ -64,7 +110,7 @@ export const StatsHome = ({ setActiveTab }) => {
           </div>
           <div>
             <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">Completed Trips</p>
-            <p className="text-2xl font-bold text-slate-800 font-heading">{completedCount + 4} Trips</p>
+            <p className="text-2xl font-bold text-slate-800 font-heading">{completedCount} Trips</p>
           </div>
         </div>
 

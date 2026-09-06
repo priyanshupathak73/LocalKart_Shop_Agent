@@ -20,14 +20,24 @@ const register = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    let normalizedRole = (role || '').toLowerCase();
+    if (normalizedRole === 'shopkeeper') normalizedRole = 'shopkeeper';
+    else if (normalizedRole === 'delivery_partner' || normalizedRole === 'delivery_agent') normalizedRole = 'delivery_agent';
+    else if (normalizedRole === 'customer') normalizedRole = 'customer';
+    else if (normalizedRole === 'admin') normalizedRole = 'admin';
+    else normalizedRole = role;
+
+    const isShopkeeper = normalizedRole === 'shopkeeper' || role === 'SHOPKEEPER';
+    const isDelivery = normalizedRole === 'delivery_agent' || role === 'DELIVERY_PARTNER';
+
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
         phone,
-        role,
-        ...(role === 'SHOPKEEPER' && {
+        role: normalizedRole,
+        ...(isShopkeeper && {
           shop: {
             create: {
               name: shopName || `${name}'s Shop`,
@@ -35,7 +45,7 @@ const register = async (req, res) => {
             },
           },
         }),
-        ...(role === 'DELIVERY_PARTNER' && {
+        ...(isDelivery && {
           deliveryPartner: {
             create: {
               vehicleType: vehicleType || 'MOTORCYCLE',
@@ -49,7 +59,7 @@ const register = async (req, res) => {
       },
     });
 
-    const token = signToken({ userId: user.id, email: user.email, role: user.role });
+    const token = signToken({ userId: user.id, email: user.email, role: user.role, name: user.name });
     const { password: _pwd, ...safeUser } = user;
     return sendSuccess(res, { user: safeUser, token }, 'Account created successfully', 201);
   } catch (err) {
@@ -74,7 +84,7 @@ const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return sendError(res, 'Invalid email or password', 401);
 
-    const token = signToken({ userId: user.id, email: user.email, role: user.role });
+    const token = signToken({ userId: user.id, email: user.email, role: user.role, name: user.name });
     const { password: _pwd, ...safeUser } = user;
     return sendSuccess(res, { user: safeUser, token }, 'Login successful');
   } catch (err) {

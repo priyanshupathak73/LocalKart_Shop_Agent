@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  createOrder,
   getOrderById,
   getShopOrders,
   acceptOrder,
@@ -11,9 +12,12 @@ import {
 } from '../controllers/order.controller.js';
 import { authenticate, authorize } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
-import { updateOrderStatusSchema } from '../schemas/order.schema.js';
+import { createOrderSchema, updateOrderStatusSchema } from '../schemas/order.schema.js';
 
 const router = Router();
+
+// ── Customer route ──
+router.post('/', authenticate, validate(createOrderSchema), createOrder);
 
 // Shared: get single order (both roles can view)
 router.get('/:id', authenticate, getOrderById);

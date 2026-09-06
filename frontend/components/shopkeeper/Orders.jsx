@@ -1,67 +1,145 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useStore } from '../../store/useStore';
-import { Package, Clock, Truck, CheckCircle, ArrowRight } from 'lucide-react';
+import API from '../../api/api';
+import { Package, Clock, Truck, CheckCircle, ArrowRight, RefreshCw, Loader2, XCircle } from 'lucide-react';
 
 export const Orders = () => {
-  const orders = useStore((state) => state.orders);
-  const updateOrderStatus = (state) => state.updateOrderStatus;
+  const storeOrders = useStore((state) => state.orders);
   const storeActions = useStore();
 
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoadingId, setActionLoadingId] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
 
-  const tabs = ['All', 'Pending', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered'];
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const res = await API.get('/orders');
+      const apiData = res.data.data || res.data.orders || (Array.isArray(res.data) ? res.data : null);
+      if (apiData && Array.isArray(apiData)) {
+        const formatted = apiData.map(o => ({
+          id: o.id || o._id,
+          customerName: o.customerName || o.user?.name || 'Customer',
+          address: o.deliveryAddress || o.address || 'Local Delivery Address',
+          items: Array.isArray(o.items) 
+            ? o.items.map(i => `${i.name} (${i.quantity || i.qty || 1})`).join(', ') 
+            : (typeof o.items === 'string' ? o.items : 'Grocery items'),
+          total: o.totalAmount !== undefined ? o.totalAmount : (o.totalPrice || o.total || 0),
+          status: o.status || 'Pending',
+          rawOrder: o
+        }));
+        setOrders(formatted);
+      } else {
+        setOrders(storeOrders);
+      }
+    } catch (err) {
+      console.warn('Backend API orders fetch warning, fallback to local store:', err.message);
+      setOrders(storeOrders);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const tabs = ['All', 'Pending', 'Accepted', 'Confirmed', 'Preparing', 'Out for Delivery', 'Delivered', 'Rejected'];
 
   const filteredOrders = activeTab === 'All'
     ? orders
-    : orders.filter((o) => o.status.toLowerCase() === activeTab.toLowerCase());
+    : orders.filter((o) => (o.status || '').toLowerCase() === activeTab.toLowerCase());
 
-  const handleUpdateStatus = (id, currentStatus) => {
-    let nextStatus = '';
-    if (currentStatus === 'Pending') nextStatus = 'Confirmed';
-    else if (currentStatus === 'Confirmed') nextStatus = 'Preparing';
-    else if (currentStatus === 'Preparing') nextStatus = 'Out for Delivery';
-    else if (currentStatus === 'Out for Delivery') nextStatus = 'Delivered';
-
-    if (nextStatus) {
-      storeActions.updateOrderStatus(id, nextStatus);
+  const handleAcceptOrder = async (id) => {
+    setActionLoadingId(id);
+    try {
+      await API.put(`/orders/${id}/accept`);
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Accepted' } : o));
+      storeActions.updateOrderStatus(id, 'Accepted');
+    } catch (err) {
+      console.warn('Accept order API warning:', err.message);
+      // Fallback local update
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Accepted' } : o));
+      storeActions.updateOrderStatus(id, 'Accepted');
+    } finally {
+      setActionLoadingId(null);
     }
+  };
+
+  const handleRejectOrder = async (id) => {
+    if (!window.confirm('Reject this order and restore stock?')) return;
+    setActionLoadingId(id);
+    try {
+      await API.put(`/orders/${id}/reject`);
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Rejected' } : o));
+      storeActions.updateOrderStatus(id, 'Rejected');
+    } catch (err) {
+      console.warn('Reject order API warning:', err.message);
+      setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Rejected' } : o));
+      storeActions.updateOrderStatus(id, 'Rejected');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleUpdateStatus = (id, nextStatus) => {
+    setOrders(prev => prev.map(o => o.id === id ? { ...o, status: nextStatus } : o));
+    storeActions.updateOrderStatus(id, nextStatus);
   };
 
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Pending':
         return 'bg-amber-50 text-amber-700 border border-amber-200';
+      case 'Accepted':
       case 'Confirmed':
         return 'bg-[#10B981]/10 text-[#166534] border border-[#10B981]/20';
       case 'Preparing':
         return 'bg-blue-50 text-blue-700 border border-blue-200';
       case 'Out for Delivery':
+      case 'InTransit':
         return 'bg-purple-50 text-purple-700 border border-purple-200';
       case 'Delivered':
         return 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+      case 'Rejected':
+      case 'Cancelled':
+        return 'bg-rose-50 text-rose-700 border border-rose-200';
       default:
         return 'bg-slate-100 text-slate-700';
     }
   };
 
   const getActionButton = (order) => {
+    const isLoading = actionLoadingId === order.id;
+
     if (order.status === 'Pending') {
       return (
-        <button
-          onClick={() => handleUpdateStatus(order.id, order.status)}
-          className="px-3.5 py-1.5 bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1"
-        >
-          Confirm <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex justify-end gap-1.5">
+          <button
+            onClick={() => handleAcceptOrder(order.id)}
+            disabled={isLoading}
+            className="px-3 py-1 bg-[#10B981] hover:bg-[#059669] text-white text-xs font-bold rounded-xl transition-all shadow-sm flex items-center gap-1 cursor-pointer disabled:opacity-50"
+          >
+            {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ArrowRight className="w-3.5 h-3.5" />} Accept
+          </button>
+          <button
+            onClick={() => handleRejectOrder(order.id)}
+            disabled={isLoading}
+            className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold rounded-xl border border-rose-200 transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50"
+          >
+            <XCircle className="w-3.5 h-3.5" /> Reject
+          </button>
+        </div>
       );
     }
-    if (order.status === 'Confirmed') {
+    if (order.status === 'Accepted' || order.status === 'Confirmed') {
       return (
         <button
-          onClick={() => handleUpdateStatus(order.id, order.status)}
-          className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+          onClick={() => handleUpdateStatus(order.id, 'Preparing')}
+          className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1 cursor-pointer"
         >
           Prepare <ArrowRight className="w-3.5 h-3.5" />
         </button>
@@ -70,8 +148,8 @@ export const Orders = () => {
     if (order.status === 'Preparing') {
       return (
         <button
-          onClick={() => handleUpdateStatus(order.id, order.status)}
-          className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+          onClick={() => handleUpdateStatus(order.id, 'Out for Delivery')}
+          className="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1 cursor-pointer"
         >
           Dispatch <ArrowRight className="w-3.5 h-3.5" />
         </button>
@@ -90,6 +168,15 @@ export const Orders = () => {
           <h1 className="text-xl font-bold font-heading text-slate-800">Order Dispatch Dashboard</h1>
           <p className="text-xs text-slate-400">Manage order workflows, accept checkouts, and dispatch to carriers.</p>
         </div>
+
+        <button
+          onClick={fetchOrders}
+          disabled={loading}
+          className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all cursor-pointer"
+          title="Refresh orders"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       {/* Tabs Menu Selection */}
@@ -99,7 +186,7 @@ export const Orders = () => {
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`
-              px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap
+              px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer
               ${activeTab === tab 
                 ? 'bg-[#166534] text-white shadow-md' 
                 : 'text-slate-500 hover:text-slate-800 hover:bg-white/50'
@@ -113,7 +200,12 @@ export const Orders = () => {
 
       {/* Table list */}
       <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm">
-        {filteredOrders.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 border border-slate-100 rounded-2xl flex flex-col items-center justify-center space-y-2">
+            <Loader2 className="w-6 h-6 animate-spin text-[#10B981]" />
+            <p className="text-slate-400 text-xs">Fetching orders from backend...</p>
+          </div>
+        ) : filteredOrders.length === 0 ? (
           <div className="text-center py-16 border border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center space-y-2">
             <div className="p-3 bg-slate-50 rounded-full text-slate-400">
               <Package className="w-6 h-6" />
@@ -139,7 +231,7 @@ export const Orders = () => {
                 {filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="py-4 px-4 font-heading font-semibold text-slate-800 text-xs">
-                      {order.id}
+                      #{String(order.id).slice(-8)}
                     </td>
                     
                     <td className="py-4 px-4 font-bold text-slate-800">
@@ -150,7 +242,7 @@ export const Orders = () => {
                       {order.address}
                     </td>
 
-                    <td className="py-4 px-4 text-slate-600 text-xs" title={order.items}>
+                    <td className="py-4 px-4 text-slate-600 text-xs max-w-[220px] truncate" title={order.items}>
                       {order.items}
                     </td>
 
@@ -177,3 +269,4 @@ export const Orders = () => {
     </div>
   );
 };
+

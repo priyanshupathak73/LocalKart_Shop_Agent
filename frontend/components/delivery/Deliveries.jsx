@@ -2,43 +2,48 @@
 
 import React, { useState } from 'react';
 import { useStore } from '../../store/useStore';
+import API from '../../api/api';
 import { MapPin, Navigation, Compass, CheckCircle } from 'lucide-react';
 
 export const Deliveries = () => {
   const orders = useStore((state) => state.orders);
   const storeActions = useStore();
 
-  const [activeSegment, setActiveSegment] = useState('active'); // active vs completed
-  
-  // GPS simulator coordinates
+  const [activeSegment, setActiveSegment] = useState('active');
   const [gpsCoords, setGpsCoords] = useState({ lat: 28.6273, lng: 77.3725 });
-  const [courierPosPercent, setCourierPosPercent] = useState(25); // percentage along mock route path
+  const [courierPosPercent, setCourierPosPercent] = useState(25);
 
   const activeDeliveries = orders.filter((o) => o.status !== 'Delivered');
   const completedDeliveries = orders.filter((o) => o.status === 'Delivered');
 
   const handleSimulateGPS = () => {
-    // Add minor shifts to GPS
     setGpsCoords({
       lat: +(gpsCoords.lat + (Math.random() - 0.5) * 0.005).toFixed(4),
       lng: +(gpsCoords.lng + (Math.random() - 0.5) * 0.005).toFixed(4),
     });
-    
-    // Animate marker along line
     setCourierPosPercent(prev => (prev >= 95 ? 15 : prev + 15));
   };
 
-  const handleUpdateStatus = (id, currentStatus) => {
+  const handleUpdateStatus = async (id, currentStatus) => {
     let nextStatus = '';
     if (currentStatus === 'Confirmed' || currentStatus === 'Preparing') nextStatus = 'Out for Delivery';
     else if (currentStatus === 'Out for Delivery') nextStatus = 'Delivered';
 
     if (nextStatus) {
-      storeActions.updateOrderStatus(id, nextStatus);
+      try {
+        if (nextStatus === 'Out for Delivery') {
+          await API.put(`/orders/${id}/pickup`);
+        } else {
+          await API.put(`/orders/${id}/status`, { status: 'Delivered' });
+        }
+        storeActions.updateOrderStatus(id, nextStatus);
+      } catch (err) {
+        console.error('Error updating status:', err);
+        storeActions.updateOrderStatus(id, nextStatus);
+      }
     }
   };
 
-  // Interpolate coordinates along mock route (Start point: 80,140, End point: 460,50)
   const courierX = 80 + (courierPosPercent / 100) * 380;
   const courierY = 140 - (courierPosPercent / 100) * 90;
 
@@ -78,7 +83,7 @@ export const Deliveries = () => {
             {activeSegment === 'active' ? (
               activeDeliveries.length === 0 ? (
                 <div className="bg-white p-6 text-center border border-slate-200/60 rounded-2xl">
-                  <p className="text-slate-400 text-xs">No active deliveries currently.</p>
+                  <p className="text-slate-400 text-xs font-semibold">No active deliveries currently.</p>
                 </div>
               ) : (
                 activeDeliveries.map((delivery) => (
@@ -127,7 +132,7 @@ export const Deliveries = () => {
             ) : (
               completedDeliveries.length === 0 ? (
                 <div className="bg-white p-6 text-center border border-slate-200/60 rounded-2xl">
-                  <p className="text-slate-400 text-xs">No completed trips logged yet today.</p>
+                  <p className="text-slate-400 text-xs font-semibold">No completed trips logged yet today.</p>
                 </div>
               ) : (
                 completedDeliveries.map((delivery) => (
@@ -179,30 +184,23 @@ export const Deliveries = () => {
 
           {/* SVG Map Illustration */}
           <div className="relative w-full h-[220px] bg-sky-50/50 border border-sky-100 rounded-2xl overflow-hidden shadow-inner">
-            {/* SVG Roads Grid */}
             <svg className="w-full h-full" viewBox="0 0 540 220" preserveAspectRatio="none">
-              {/* Background grid representing sectors */}
               <rect width="100%" height="100%" fill="#f8fafc" />
               <path d="M 0,90 Q 250,110 540,80" fill="none" stroke="#e2e8f0" strokeWidth="20" />
               <path d="M 80,0 L 80,220" fill="none" stroke="#e2e8f0" strokeWidth="16" />
               <path d="M 460,0 L 460,220" fill="none" stroke="#e2e8f0" strokeWidth="16" />
               <path d="M 0,160 C 180,180 360,120 540,160" fill="none" stroke="#e2e8f0" strokeWidth="14" />
               
-              {/* Active Route Guideline */}
               <path d="M 80,140 Q 270,110 460,50" fill="none" stroke="#93c5fd" strokeWidth="6" strokeDasharray="6,4" />
 
-              {/* Waypoint Nodes */}
-              {/* Store Pickup (Green Node) */}
               <circle cx="80" cy="140" r="14" fill="#dcfce7" />
               <circle cx="80" cy="140" r="8" fill="#166534" />
               <text x="80" y="170" textAnchor="middle" className="text-[9px] font-bold fill-slate-600 font-heading">Store Pickup</text>
 
-              {/* Customer Drop-off (Red Node) */}
               <circle cx="460" cy="50" r="14" fill="#ffe4e6" />
               <circle cx="460" cy="50" r="8" fill="#e11d48" />
               <text x="460" y="80" textAnchor="middle" className="text-[9px] font-bold fill-slate-600 font-heading">Drop Address</text>
 
-              {/* Courier Bike Marker (Emerald Circle) */}
               <g>
                 <circle cx={courierX} cy={courierY} r="12" fill="#10B981" stroke="#ffffff" strokeWidth="2" className="shadow-md" />
                 <polygon points={`${courierX-3},${courierY-3} ${courierX+4},${courierY} ${courierX-3},${courierY+3}`} fill="#ffffff" />
