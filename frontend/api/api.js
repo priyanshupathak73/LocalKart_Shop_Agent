@@ -1,12 +1,6 @@
 import { useAuthStore } from '../store/useAuthStore';
 
-const getBaseUrl = () => {
-  const envUrl = (typeof window !== 'undefined' ? window.ENV?.NEXT_PUBLIC_API_URL : null) || process.env.NEXT_PUBLIC_API_URL;
-  if (envUrl) {
-    return envUrl.trim().replace(/\/+$/, '');
-  }
-  return 'http://localhost:5001/api';
-};
+const getBaseUrl = () => '/api';
 
 export function getFullUrl(endpoint) {
   if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {

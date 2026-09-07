@@ -24,6 +24,7 @@ model User {
   firebaseUid String?
   supabaseUid String?
   fcmToken    String?  @default("")
+  addresses   Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -55,6 +56,7 @@ model Shop {
   rating      Float    @default(4.5)
   numRatings  Int      @default(0)
   isActive    Boolean  @default(true)
+  isOpen      Boolean? @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
