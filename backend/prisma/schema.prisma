@@ -20,10 +20,11 @@ model User {
   password    String
   name        String
   phone       String?
-  role        String   // "customer" | "shopkeeper" | "delivery_agent" | "admin" | "SHOPKEEPER" | "DELIVERY_PARTNER"
+  role        String // "customer" | "shopkeeper" | "delivery_agent" | "admin" | "SHOPKEEPER" | "DELIVERY_PARTNER"
   firebaseUid String?
   supabaseUid String?
   fcmToken    String?  @default("")
+  addresses   Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -55,6 +56,7 @@ model Shop {
   rating      Float    @default(4.5)
   numRatings  Int      @default(0)
   isActive    Boolean  @default(true)
+  isOpen      Boolean? @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -67,26 +69,26 @@ model Shop {
 }
 
 model Product {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  shopId        String   @db.ObjectId
-  storeName     String?
-  createdBy     String?  @db.ObjectId
-  name          String
-  category      String
-  description   String?
-  price         Float
-  originalPrice Float?
-  discount      Float?   @default(0)
-  imageUrl      String?
-  rating        Float?   @default(4.5)
-  reviews       Json?
-  unit          String?  @default("1 item")
-  stock         Int      @default(0)
-  isAvailable   Boolean  @default(true)
-  isTrending    Boolean? @default(false)
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  shopId         String   @db.ObjectId
+  storeName      String?
+  createdBy      String?  @db.ObjectId
+  name           String
+  category       String
+  description    String?
+  price          Float
+  originalPrice  Float?
+  discount       Float?   @default(0)
+  imageUrl       String?
+  rating         Float?   @default(4.5)
+  reviews        Json?
+  unit           String?  @default("1 item")
+  stock          Int      @default(0)
+  isAvailable    Boolean  @default(true)
+  isTrending     Boolean? @default(false)
   isDealOfTheDay Boolean? @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   // Relations
   shop          Shop           @relation(fields: [shopId], references: [id], onDelete: Cascade)
@@ -99,7 +101,7 @@ model Product {
 model InventoryLog {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
   productId    String   @db.ObjectId
-  changeAmount Int      // positive = added, negative = reduced
+  changeAmount Int // positive = added, negative = reduced
   reason       String
   stockBefore  Int
   stockAfter   Int
@@ -112,15 +114,15 @@ model InventoryLog {
 }
 
 model DeliveryPartner {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String   @unique @db.ObjectId
-  vehicleType      String   @default("MOTORCYCLE") // "BICYCLE", "MOTORCYCLE", "CAR", "AUTO"
-  isAvailable      Boolean  @default(false)
-  rating           Float    @default(5.0)
-  totalDeliveries  Int      @default(0)
-  totalEarnings    Float    @default(0.0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String   @unique @db.ObjectId
+  vehicleType     String   @default("MOTORCYCLE") // "BICYCLE", "MOTORCYCLE", "CAR", "AUTO"
+  isAvailable     Boolean  @default(false)
+  rating          Float    @default(5.0)
+  totalDeliveries Int      @default(0)
+  totalEarnings   Float    @default(0.0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -130,25 +132,25 @@ model DeliveryPartner {
 }
 
 model Order {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  customerId        String?  @db.ObjectId
-  shopId            String   @db.ObjectId
-  deliveryPartnerId String?  @db.ObjectId
-  status            String   @default("Pending") // "Pending", "Accepted", "PickedUp", "InTransit", "Delivered", "Cancelled"
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  customerId        String?   @db.ObjectId
+  shopId            String    @db.ObjectId
+  deliveryPartnerId String?   @db.ObjectId
+  status            String    @default("Pending") // "Pending", "Accepted", "PickedUp", "InTransit", "Delivered", "Cancelled"
   totalAmount       Float
-  subtotal          Float    @default(0.0)
-  deliveryFee       Float    @default(40.0)
-  tax               Float    @default(0.0)
+  subtotal          Float     @default(0.0)
+  deliveryFee       Float     @default(40.0)
+  tax               Float     @default(0.0)
   customerName      String
   customerPhone     String
   deliveryAddress   String
   notes             String?
-  paymentMethod     String   @default("COD")
+  paymentMethod     String    @default("COD")
   paymentResult     Json?
-  isPaid            Boolean  @default(false)
+  isPaid            Boolean   @default(false)
   paidAt            DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // Relations
   customer        User?            @relation(fields: [customerId], references: [id])
