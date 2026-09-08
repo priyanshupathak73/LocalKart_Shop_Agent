@@ -20,6 +20,7 @@ import dashboardRoutes from './routes/dashboard.routes.js';
 dotenv.config();
 
 const app = express();
+app.disable('x-powered-by');
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 5000;
 
@@ -94,6 +95,7 @@ app.use((req, _res, next) => {
 // ── API Routes ───────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/shop', shopRoutes);
+app.use('/api/shops', shopRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/delivery', deliveryRoutes);
