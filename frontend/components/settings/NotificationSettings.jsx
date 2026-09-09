@@ -15,97 +15,77 @@ export const NotificationSettings = ({ showToast }) => {
     setSaving(true);
     setTimeout(() => {
       setSaving(false);
-      if (showToast) showToast('Notifications Saved', 'Notification preferences updated!');
-    }, 800);
+      if (showToast) showToast('Notifications Saved', 'Notification preferences updated successfully!');
+    }, 700);
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden text-left">
-      <div className="p-5 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 font-heading">
-          <Bell className="w-4 h-4 text-emerald-500" /> Notification & Alert Preferences
+    <div className="bg-white border border-slate-200/70 rounded-3xl shadow-card overflow-hidden text-left">
+      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 font-heading">
+          <Bell className="w-4 h-4 text-[#105634]" /> Sound Alerts & Notifications
         </h3>
-        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-          Real-time Sync
+        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+          Real-time Alerts
         </span>
       </div>
 
       <form onSubmit={handleSave} className="p-6 space-y-4">
         {/* Order Push Alerts */}
-        <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200/60 dark:border-slate-800">
+        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200/70">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 rounded-lg">
+            <div className="p-2.5 bg-emerald-50 text-[#105634] rounded-xl border border-emerald-100">
               <Bell className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">New Order Push Alerts</p>
-              <p className="text-[10px] text-slate-400">Receive instant push notifications for incoming orders</p>
+              <p className="text-xs font-bold text-slate-800">New Order Push Notifications</p>
+              <p className="text-[11px] text-slate-400">Receive instant high-priority browser alerts when a customer places an order</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setOrderAlerts(!orderAlerts)}
-            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${orderAlerts ? 'bg-emerald-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
+            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${orderAlerts ? 'bg-[#105634] justify-end' : 'bg-slate-300 justify-start'}`}
           >
             <span className="w-4 h-4 bg-white rounded-full shadow-md" />
           </button>
         </div>
 
         {/* Audio Sound Alerts */}
-        <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200/60 dark:border-slate-800">
+        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200/70">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 rounded-lg">
+            <div className="p-2.5 bg-emerald-50 text-[#105634] rounded-xl border border-emerald-100">
               <Volume2 className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Audio Chime Sound Alerts</p>
-              <p className="text-[10px] text-slate-400">Play sound ringtone when a new customer order arrives</p>
+              <p className="text-xs font-bold text-slate-800">Sound Chime on Incoming Checkout</p>
+              <p className="text-[11px] text-slate-400">Play an audible chime alert in the shop so you never miss an order</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setSoundAlerts(!soundAlerts)}
-            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${soundAlerts ? 'bg-emerald-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
+            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${soundAlerts ? 'bg-[#105634] justify-end' : 'bg-slate-300 justify-start'}`}
           >
             <span className="w-4 h-4 bg-white rounded-full shadow-md" />
           </button>
         </div>
 
-        {/* Email Daily Digest */}
-        <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200/60 dark:border-slate-800">
+        {/* Daily Email Summary */}
+        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-200/70">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 rounded-lg">
+            <div className="p-2.5 bg-blue-50 text-blue-700 rounded-xl border border-blue-100">
               <Mail className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">Daily Sales Email Summary</p>
-              <p className="text-[10px] text-slate-400">Send end-of-day sales and earnings report to registered email</p>
+              <p className="text-xs font-bold text-slate-800">Daily Financial & Settlement Digest</p>
+              <p className="text-[11px] text-slate-400">Receive evening summary of total daily revenue, settled items, and top products</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => setEmailDigest(!emailDigest)}
-            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${emailDigest ? 'bg-emerald-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
-          >
-            <span className="w-4 h-4 bg-white rounded-full shadow-md" />
-          </button>
-        </div>
-
-        {/* SMS Promotions */}
-        <div className="flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200/60 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 rounded-lg">
-              <Smartphone className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-slate-800 dark:text-slate-200">SMS Marketing & Campaign Alerts</p>
-              <p className="text-[10px] text-slate-400">Receive SMS alerts for local platform discounts and merchant offers</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSmsPromos(!smsPromos)}
-            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${smsPromos ? 'bg-emerald-500 justify-end' : 'bg-slate-300 dark:bg-slate-700 justify-start'}`}
+            className={`w-11 h-6 flex items-center rounded-full p-1 transition-colors ${emailDigest ? 'bg-[#105634] justify-end' : 'bg-slate-300 justify-start'}`}
           >
             <span className="w-4 h-4 bg-white rounded-full shadow-md" />
           </button>
@@ -115,13 +95,14 @@ export const NotificationSettings = ({ showToast }) => {
           <button
             type="submit"
             disabled={saving}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-1.5 font-heading shadow-md transition-all"
+            className="bg-[#105634] hover:bg-[#0e3e26] text-white font-bold px-5 py-2.5 rounded-2xl text-xs flex items-center gap-2 font-heading shadow-md transition-all active:scale-95"
           >
             <Save className="w-3.5 h-3.5" />
-            {saving ? 'Saving...' : 'Save Notification Preferences'}
+            <span>{saving ? 'Saving...' : 'Save Notification Preferences'}</span>
           </button>
         </div>
       </form>
     </div>
   );
 };
+export default NotificationSettings;

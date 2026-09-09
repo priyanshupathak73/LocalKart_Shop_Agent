@@ -216,10 +216,10 @@ export default function RegisterShopkeeperPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-[#111827] flex flex-col font-body dark:bg-slate-950 dark:text-slate-100 relative">
+    <div className="min-h-screen bg-[#f9fafb] text-slate-800 flex flex-col font-sans relative">
       {draftSavedToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold font-heading flex items-center gap-2 animate-bounce">
-          <Sparkles className="w-4 h-4" /> Progress Auto-Saved to Draft!
+        <div className="fixed bottom-6 right-6 z-50 bg-[#105634] text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold font-heading flex items-center gap-2 animate-bounce">
+          <Sparkles className="w-4 h-4 text-[#f27a21]" /> Progress Auto-Saved to Draft!
         </div>
       )}
 
@@ -229,7 +229,7 @@ export default function RegisterShopkeeperPage() {
           <RegistrationHero />
           
           <div className="lg:col-span-7">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800/80 shadow-lg rounded-3xl overflow-hidden flex flex-col">
+            <div className="bg-white border border-slate-200/70 shadow-lg rounded-3xl overflow-hidden flex flex-col">
               <RegistrationStepper currentStep={step} />
               
               <div className="p-6 md:p-8 space-y-6 flex-1 text-left">
@@ -308,15 +308,15 @@ export default function RegisterShopkeeperPage() {
 
                 {error && <p className="text-xs font-bold text-red-500">{error}</p>}
 
-                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6">
+                <div className="flex items-center justify-between border-t border-slate-100 pt-6">
                   {step > 1 ? (
-                    <button type="button" onClick={handleBackStep} className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1 font-heading"><ArrowLeft className="w-3.5 h-3.5" /> Back</button>
+                    <button type="button" onClick={handleBackStep} className="bg-slate-100 text-slate-700 font-bold px-5 py-2.5 rounded-xl text-xs flex items-center gap-1 font-heading"><ArrowLeft className="w-3.5 h-3.5" /> Back</button>
                   ) : <div />}
 
                   {step < 5 ? (
-                    <button type="button" onClick={handleContinue} className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-1 shadow-md font-heading">Continue <ArrowRight className="w-3.5 h-3.5" /></button>
+                    <button type="button" onClick={handleContinue} className="bg-[#105634] hover:bg-[#0e3e26] text-white font-bold px-6 py-2.5 rounded-xl text-xs flex items-center gap-1 shadow-md font-heading">Continue <ArrowRight className="w-3.5 h-3.5" /></button>
                   ) : (
-                    <button type="button" disabled={loading} onClick={handleSubmitRegistration} className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-7 py-3 rounded-xl text-xs flex items-center gap-2 shadow-lg font-heading">{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Complete Registration</button>
+                    <button type="button" disabled={loading} onClick={handleSubmitRegistration} className="bg-[#105634] hover:bg-[#0e3e26] text-white font-bold px-7 py-3 rounded-xl text-xs flex items-center gap-2 shadow-lg font-heading">{loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Complete Registration</button>
                   )}
                 </div>
               </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { MapPin, Building, Save } from 'lucide-react';
+import { Building, Save } from 'lucide-react';
 import { AddressFields } from '../address/AddressFields';
 import { OpenStreetMapPicker } from '../address/OpenStreetMapPicker';
 
@@ -22,16 +22,16 @@ export const StoreAddressLocationCard = ({ showToast }) => {
     setTimeout(() => {
       setSaving(false);
       if (showToast) showToast('Address Saved', 'Physical address and location coordinates updated!');
-    }, 1000);
+    }, 900);
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden text-left">
-      <div className="p-5 border-b border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
-        <h3 className="text-sm font-bold text-slate-800 dark:text-white flex items-center gap-2 font-heading">
-          <Building className="w-4 h-4 text-emerald-500" /> Physical Address & Map Location Pin
+    <div className="bg-white border border-slate-200/70 rounded-3xl shadow-card overflow-hidden text-left">
+      <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 font-heading">
+          <Building className="w-4 h-4 text-[#105634]" /> Physical Address & Delivery Pin
         </h3>
-        <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
+        <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
           OpenStreetMap Verified
         </span>
       </div>
@@ -63,13 +63,14 @@ export const StoreAddressLocationCard = ({ showToast }) => {
           <button
             type="submit"
             disabled={saving}
-            className="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-5 py-2 rounded-xl text-xs flex items-center gap-1.5 font-heading shadow-md transition-all"
+            className="bg-[#105634] hover:bg-[#0e3e26] text-white font-bold px-5 py-2.5 rounded-2xl text-xs flex items-center gap-2 font-heading shadow-md transition-all active:scale-95"
           >
             <Save className="w-3.5 h-3.5" />
-            {saving ? 'Saving...' : 'Save Physical Address & Location'}
+            <span>{saving ? 'Saving...' : 'Save Physical Address & Coordinates'}</span>
           </button>
         </div>
       </form>
     </div>
   );
 };
+export default StoreAddressLocationCard;

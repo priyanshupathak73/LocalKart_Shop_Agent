@@ -1,15 +1,34 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import API from '../../api/api';
-import { IndianRupee, ShoppingCart, AlertTriangle, Star, ArrowUpRight, TrendingUp } from 'lucide-react';
+import { 
+  IndianRupee, 
+  ShoppingCart, 
+  AlertTriangle, 
+  Star, 
+  ArrowUpRight, 
+  TrendingUp, 
+  Package, 
+  Clock, 
+  CheckCircle2, 
+  Sparkles, 
+  Plus, 
+  ArrowRight,
+  ShieldCheck,
+  Zap
+} from 'lucide-react';
 
 export const StatsHome = ({ setActiveTab }) => {
   const products = useStore((state) => state.products);
   const orders = useStore((state) => state.orders);
   const setProducts = useStore((state) => state.setProducts);
   const setOrders = useStore((state) => state.setOrders);
+
+  const [timeframe, setTimeframe] = useState('7d'); // '7d' | '30d' | '90d'
+  const [hoveredPoint, setHoveredPoint] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -35,7 +54,7 @@ export const StatsHome = ({ setActiveTab }) => {
             price: p.price,
             stock: p.stock ?? p.stockQuantity ?? 0,
             category: p.category || 'General',
-            image: p.image || '/placeholder.jpg'
+            image: p.image || p.imageUrl || '/placeholder.jpg'
           })));
         }
       } catch (err) {
@@ -51,189 +70,357 @@ export const StatsHome = ({ setActiveTab }) => {
     .reduce((sum, o) => sum + (o.total || 0), 0);
 
   const pendingOrders = orders.filter(o => o.status !== 'Delivered').length;
-  const lowStockCount = products.filter(p => p.stock < 10).length;
+  const lowStockProducts = products.filter(p => p.stock < 10);
+  const lowStockCount = lowStockProducts.length;
 
-  // Render recent orders (limit to 3)
-  const recentOrders = orders.slice(0, 3);
+  // Render recent orders (limit to 4)
+  const recentOrders = orders.slice(0, 4);
 
-  // SVG Chart Mock Coordinates
-  const chartPoints = [
-    { label: 'Mon', val: 1200 },
-    { label: 'Tue', val: 1900 },
-    { label: 'Wed', val: 1500 },
-    { label: 'Thu', val: 2800 },
-    { label: 'Fri', val: 2400 },
-    { label: 'Sat', val: 3800 },
-    { label: 'Sun', val: 4200 }
-  ];
+  // SVG Chart Coordinates
+  const chartDatasets = {
+    '7d': [
+      { label: 'Mon', val: 1450 },
+      { label: 'Tue', val: 2100 },
+      { label: 'Wed', val: 1850 },
+      { label: 'Thu', val: 2950 },
+      { label: 'Fri', val: 2600 },
+      { label: 'Sat', val: 4100 },
+      { label: 'Sun', val: 4800 }
+    ],
+    '30d': [
+      { label: 'Week 1', val: 12400 },
+      { label: 'Week 2', val: 15800 },
+      { label: 'Week 3', val: 18900 },
+      { label: 'Week 4', val: 22400 }
+    ],
+    '90d': [
+      { label: 'Month 1', val: 45000 },
+      { label: 'Month 2', val: 58000 },
+      { label: 'Month 3', val: 72000 }
+    ]
+  };
 
-  // Map values to Y coordinates
-  const mapY = (val) => 170 - (val / 5000) * 140;
-  const pathPoints = chartPoints.map((pt, i) => `${40 + i * 80},${mapY(pt.val)}`);
+  const chartPoints = chartDatasets[timeframe] || chartDatasets['7d'];
+  const maxVal = Math.max(...chartPoints.map(p => p.val), 5000);
+
+  // Map values to Y coordinates (viewBox 560 x 200)
+  const mapY = (val) => 165 - (val / maxVal) * 125;
+  const stepX = 500 / (chartPoints.length - 1 || 1);
+  const pathPoints = chartPoints.map((pt, i) => `${30 + i * stepX},${mapY(pt.val)}`);
   
   let pathD = `M ${pathPoints[0]}`;
   for (let i = 1; i < pathPoints.length; i++) {
     const [prevX, prevY] = pathPoints[i-1].split(',').map(Number);
     const [currX, currY] = pathPoints[i].split(',').map(Number);
-    const cpX1 = prevX + 40;
+    const cpX1 = prevX + stepX * 0.45;
     const cpY1 = prevY;
-    const cpX2 = currX - 40;
+    const cpX2 = currX - stepX * 0.45;
     const cpY2 = currY;
     pathD += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${currX},${currY}`;
   }
 
-  const areaD = `${pathD} L 520,180 L 40,180 Z`;
+  const lastPointX = 30 + (chartPoints.length - 1) * stepX;
+  const areaD = `${pathD} L ${lastPointX},180 L 30,180 Z`;
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Message */}
-      <div>
-        <h1 className="text-2xl font-bold font-heading text-slate-800">Shop Overview</h1>
-        <p className="text-slate-500 text-sm">Real-time stats and metrics for Gupta Kirana Store.</p>
+    <div className="space-y-7">
+      
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-[#0e3e26] via-[#105634] to-[#126b41] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
+        {/* Subtle decorative mesh background */}
+        <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 -mb-10 w-48 h-48 bg-[#f27a21]/15 rounded-full blur-2xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 backdrop-blur-md text-emerald-200 border border-white/15">
+              <Sparkles className="w-3.5 h-3.5 text-[#f27a21]" />
+              <span>Store Dispatch Live</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black font-heading tracking-tight text-white">
+              Gupta Kirana Store Dashboard
+            </h1>
+            <p className="text-emerald-100/80 text-xs sm:text-sm max-w-xl">
+              Track live customer checkouts, inventory health, and automated neighborhood dispatch in real time.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              onClick={() => setActiveTab('products')}
+              className="bg-white hover:bg-emerald-50 text-[#0e3e26] font-bold px-4 py-2.5 rounded-2xl text-xs transition-all shadow-md flex items-center gap-2 font-heading active:scale-95"
+            >
+              <Plus className="w-4 h-4 text-emerald-700" />
+              <span>Add New Product</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('orders')}
+              className="bg-emerald-950/50 hover:bg-emerald-950/70 border border-emerald-400/30 text-white font-bold px-4 py-2.5 rounded-2xl text-xs transition-all shadow-xs flex items-center gap-2 font-heading active:scale-95"
+            >
+              <ShoppingCart className="w-4 h-4 text-emerald-300" />
+              <span>View All Orders</span>
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* KPI 1 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-bl-full transition-transform group-hover:scale-105"></div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+      {/* 4 Animated KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* KPI 1: Revenue */}
+        <motion.div 
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-emerald-200 transition-all relative overflow-hidden group"
+        >
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#105634] border border-emerald-100 flex items-center justify-center shadow-xs">
               <IndianRupee className="w-6 h-6" />
-            </span>
-            <span className="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" /> Live
+            </div>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
+              <TrendingUp className="w-3 h-3" /> +14.2%
             </span>
           </div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Revenue</p>
-          <h3 className="text-2xl font-bold font-heading text-slate-800 mt-1">₹{totalSales.toLocaleString()}</h3>
-          <p className="text-[11px] text-slate-400 mt-1.5">Calculated from delivered orders</p>
-        </div>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Gross Sales</p>
+          <h3 className="text-2xl sm:text-3xl font-black font-heading text-slate-900 mt-1">
+            ₹{totalSales.toLocaleString()}
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-1.5 flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <span>Delivered order volume</span>
+          </p>
+        </motion.div>
 
-        {/* KPI 2 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-bl-full"></div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="p-3 bg-blue-50 text-blue-600 rounded-xl">
+        {/* KPI 2: Orders */}
+        <motion.div 
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-blue-200 transition-all relative overflow-hidden group"
+        >
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-700 border border-blue-100 flex items-center justify-center shadow-xs">
               <ShoppingCart className="w-6 h-6" />
-            </span>
-            <span className="text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">
-              {pendingOrders} Active
+            </div>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200/60">
+              <Zap className="w-3 h-3 text-blue-500" /> {pendingOrders} Active
             </span>
           </div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Orders</p>
-          <h3 className="text-2xl font-bold font-heading text-slate-800 mt-1">{orders.length}</h3>
-          <p className="text-[11px] text-slate-400 mt-1.5">All time orders registered</p>
-        </div>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Orders</p>
+          <h3 className="text-2xl sm:text-3xl font-black font-heading text-slate-900 mt-1">
+            {orders.length}
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-1.5">
+            All-time customer requests
+          </p>
+        </motion.div>
 
-        {/* KPI 3 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-bl-full"></div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="p-3 bg-amber-50 text-amber-600 rounded-xl">
+        {/* KPI 3: Stock Status */}
+        <motion.div 
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-amber-200 transition-all relative overflow-hidden group"
+        >
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-100 flex items-center justify-center shadow-xs">
               <AlertTriangle className="w-6 h-6" />
-            </span>
-            {lowStockCount > 0 && (
-              <span className="text-[11px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full animate-pulse">
+            </div>
+            {lowStockCount > 0 ? (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/70">
                 Action Required
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/60">
+                Optimal
               </span>
             )}
           </div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Low Stock items</p>
-          <h3 className="text-2xl font-bold font-heading text-slate-800 mt-1">{lowStockCount}</h3>
-          <p className="text-[11px] text-slate-400 mt-1.5">Stock quantity is below 10</p>
-        </div>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Low Stock Items</p>
+          <h3 className="text-2xl sm:text-3xl font-black font-heading text-slate-900 mt-1">
+            {lowStockCount}
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-1.5">
+            {lowStockCount > 0 ? 'Stock is running below 10 units' : 'All SKUs adequately stocked'}
+          </p>
+        </motion.div>
 
-        {/* KPI 4 */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-yellow-500/5 rounded-bl-full"></div>
-          <div className="flex items-center justify-between mb-4">
-            <span className="p-3 bg-yellow-50 text-yellow-600 rounded-xl">
-              <Star className="w-6 h-6 fill-current" />
-            </span>
-            <span className="text-[11px] font-bold text-yellow-700 bg-yellow-50 px-2 py-0.5 rounded-full">
-              Top Tier
+        {/* KPI 4: Rating */}
+        <motion.div 
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-orange-200 transition-all relative overflow-hidden group"
+        >
+          <div className="flex items-center justify-between mb-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#f27a21] border border-orange-100 flex items-center justify-center shadow-xs">
+              <Star className="w-6 h-6 fill-[#f27a21]" />
+            </div>
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-800 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200/70">
+              Top Rated
             </span>
           </div>
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Store Rating</p>
-          <h3 className="text-2xl font-bold font-heading text-slate-800 mt-1">4.8 <span className="text-xs text-slate-400">/ 5.0</span></h3>
-          <p className="text-[11px] text-slate-400 mt-1.5">Based on customer reviews</p>
-        </div>
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Merchant Rating</p>
+          <h3 className="text-2xl sm:text-3xl font-black font-heading text-slate-900 mt-1 flex items-baseline gap-1.5">
+            4.8 <span className="text-xs font-semibold text-slate-400">/ 5.0</span>
+          </h3>
+          <p className="text-[11px] text-slate-500 mt-1.5">
+            Based on 120+ customer reviews
+          </p>
+        </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Sales Chart */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm lg:col-span-2 flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-6">
+      {/* Main Insights Grid (Chart + Restock Alerts) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        {/* Weekly Revenue Spline Chart */}
+        <div className="lg:col-span-8 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/70 shadow-card flex flex-col justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-              <h3 className="text-base font-bold text-slate-800">Weekly Revenue Flow</h3>
-              <p className="text-xs text-slate-400">Weekly checkout volume chart</p>
+              <h3 className="text-lg font-bold font-heading text-slate-900">Revenue Flow & Checkout Volume</h3>
+              <p className="text-xs text-slate-500 mt-0.5">Real-time local fulfillment revenue trends</p>
             </div>
-            <span className="text-xs text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1">
-              Live Feed <span className="w-1.5 h-1.5 bg-[#10B981] rounded-full animate-ping"></span>
-            </span>
+
+            {/* Timeframe selector pills */}
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl self-start sm:self-auto">
+              {[
+                { id: '7d', label: '7 Days' },
+                { id: '30d', label: '30 Days' },
+                { id: '90d', label: '90 Days' },
+              ].map(t => (
+                <button
+                  key={t.id}
+                  onClick={() => setTimeframe(t.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    timeframe === t.id
+                      ? 'bg-white text-[#0e3e26] shadow-xs'
+                      : 'text-slate-500 hover:text-slate-800'
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* SVG Spline Graph */}
-          <div className="relative w-full h-[200px]">
-            <svg viewBox="0 0 560 200" className="w-full h-full" preserveAspectRatio="none">
+          {/* Spline Graph Canvas */}
+          <div className="relative w-full h-[220px]">
+            <svg viewBox="0 0 560 200" className="w-full h-full overflow-visible" preserveAspectRatio="none">
               <defs>
-                <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10B981" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+                <linearGradient id="chartEmeraldGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#105634" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="#105634" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
               
-              <line x1="40" y1="30" x2="520" y2="30" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="40" y1="65" x2="520" y2="65" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="40" y1="100" x2="520" y2="100" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="40" y1="135" x2="520" y2="135" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="40" y1="170" x2="520" y2="170" stroke="#cbd5e1" strokeWidth="1.5" />
+              {/* Subtle Horizontal Grid lines */}
+              <line x1="30" y1="35" x2="530" y2="35" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="3 3" />
+              <line x1="30" y1="80" x2="530" y2="80" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="3 3" />
+              <line x1="30" y1="125" x2="530" y2="125" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="3 3" />
+              <line x1="30" y1="170" x2="530" y2="170" stroke="#e2e8f0" strokeWidth="1.5" />
 
-              <path d={areaD} fill="url(#chartGrad)" />
-              <path d={pathD} fill="none" stroke="#10B981" strokeWidth="3" strokeLinecap="round" />
+              {/* Gradient Area & Stroke */}
+              <path d={areaD} fill="url(#chartEmeraldGrad)" />
+              <path d={pathD} fill="none" stroke="#105634" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 
+              {/* Data Nodes */}
               {chartPoints.map((pt, i) => {
-                const cx = 40 + i * 80;
+                const cx = 30 + i * stepX;
                 const cy = mapY(pt.val);
+                const isHovered = hoveredPoint === i;
+
                 return (
-                  <g key={i}>
-                    <circle cx={cx} cy={cy} r="6" fill="#166534" stroke="#ffffff" strokeWidth="2" className="cursor-pointer" />
-                    <text x={cx} y={cy - 12} textAnchor="middle" className="text-[10px] font-bold fill-slate-700 font-heading">
-                      ₹{pt.val}
+                  <g key={i} onMouseEnter={() => setHoveredPoint(i)} onMouseLeave={() => setHoveredPoint(null)}>
+                    <circle 
+                      cx={cx} 
+                      cy={cy} 
+                      r={isHovered ? 7 : 5} 
+                      fill="#0e3e26" 
+                      stroke="#ffffff" 
+                      strokeWidth="2.5" 
+                      className="cursor-pointer transition-all" 
+                    />
+                    
+                    {/* Value Badge */}
+                    <text 
+                      x={cx} 
+                      y={cy - 12} 
+                      textAnchor="middle" 
+                      className="text-[11px] font-black fill-slate-800 font-heading"
+                    >
+                      ₹{pt.val.toLocaleString()}
+                    </text>
+
+                    {/* X-axis Label */}
+                    <text 
+                      x={cx} 
+                      y="190" 
+                      textAnchor="middle" 
+                      className="text-[10px] font-bold fill-slate-400 font-sans"
+                    >
+                      {pt.label}
                     </text>
                   </g>
                 );
               })}
-
-              {chartPoints.map((pt, i) => (
-                <text key={i} x={40 + i * 80} y="192" textAnchor="middle" className="text-[10px] font-semibold fill-slate-400">
-                  {pt.label}
-                </text>
-              ))}
             </svg>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+            <span className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>Highest revenue peak: ₹{Math.max(...chartPoints.map(p => p.val)).toLocaleString()}</span>
+            </span>
+            <span className="text-[11px] text-slate-400">Refreshed live every 60s</span>
           </div>
         </div>
 
-        {/* Low Stock Alert Sidebar */}
-        <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm flex flex-col justify-between">
+        {/* Restock Alerts Sidebar Widget */}
+        <div className="lg:col-span-4 bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/70 shadow-card flex flex-col justify-between">
           <div>
-            <h3 className="text-base font-bold text-slate-800 mb-1">Restock Alerts</h3>
-            <p className="text-xs text-slate-400 mb-4">Products currently running low on stock</p>
-            
-            <div className="space-y-3">
-              {products.filter(p => p.stock < 10).length === 0 ? (
-                <p className="text-xs text-slate-400 italic py-4 text-center">No low stock items</p>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-100">
+                  <AlertTriangle className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold font-heading text-slate-900">Restock Alerts</h3>
+                  <p className="text-[11px] text-slate-400">Inventory items needing attention</p>
+                </div>
+              </div>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                {lowStockCount} items
+              </span>
+            </div>
+
+            <div className="space-y-3 mt-4">
+              {lowStockProducts.length === 0 ? (
+                <div className="text-center py-10 space-y-2">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6" />
+                  </div>
+                  <p className="text-xs font-bold text-slate-700">Inventory in Great Health</p>
+                  <p className="text-[11px] text-slate-400">All products have 10+ units available in stock.</p>
+                </div>
               ) : (
-                products.filter(p => p.stock < 10).map((product) => (
-                  <div key={product.id} className="flex justify-between items-center p-3 bg-rose-50/50 hover:bg-rose-50 border border-rose-100 rounded-xl transition-all">
-                    <div>
-                      <h5 className="text-xs font-bold text-slate-800">{product.name}</h5>
-                      <p className="text-[10px] text-slate-400 font-semibold">{product.category}</p>
+                lowStockProducts.slice(0, 4).map((p) => (
+                  <div 
+                    key={p.id} 
+                    className="p-3 bg-slate-50 hover:bg-emerald-50/40 border border-slate-200/70 hover:border-emerald-200/70 rounded-2xl transition-all flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                        {p.image && p.image !== '/placeholder.jpg' ? (
+                          <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <Package className="w-5 h-5 text-slate-400" />
+                        )}
+                      </div>
+                      <div className="truncate">
+                        <p className="text-xs font-bold text-slate-800 truncate font-heading">{p.name}</p>
+                        <p className="text-[10px] text-slate-400">{p.category}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-                        {product.stock} left
+
+                    <div className="text-right shrink-0">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                        {p.stock} left
                       </span>
                     </div>
                   </div>
@@ -241,74 +428,119 @@ export const StatsHome = ({ setActiveTab }) => {
               )}
             </div>
           </div>
-          
+
           <button
             onClick={() => setActiveTab('inventory')}
-            className="w-full mt-6 py-2.5 bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+            className="w-full mt-4 py-2.5 px-4 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-[#0e3e26] text-xs font-bold transition-all flex items-center justify-center gap-1.5"
           >
-            Manage Inventory <ArrowUpRight className="w-4 h-4 text-slate-400" />
+            <span>Open Inventory Controller</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Recent Orders table */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200/60 shadow-sm">
-        <div className="flex justify-between items-center mb-6">
+      {/* Recent Orders Live Stream Section */}
+      <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200/70 shadow-card">
+        <div className="flex items-center justify-between mb-5">
           <div>
-            <h3 className="text-base font-bold text-slate-800">Recent Checkout Activities</h3>
-            <p className="text-xs text-slate-400">Review status logs for pending dispatchments</p>
+            <h3 className="text-lg font-bold font-heading text-slate-900">Recent Customer Orders</h3>
+            <p className="text-xs text-slate-500 mt-0.5">Live feed of orders placed by neighborhood buyers</p>
           </div>
+
           <button
             onClick={() => setActiveTab('orders')}
-            className="text-xs font-bold text-[#10B981] hover:text-[#059669] transition-colors"
+            className="text-xs font-bold text-[#105634] hover:text-[#0e3e26] hover:underline flex items-center gap-1"
           >
-            View All Orders
+            <span>View All ({orders.length})</span>
+            <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm border-collapse">
-            <thead>
-              <tr className="border-b border-slate-100 text-slate-400 font-semibold uppercase tracking-wider text-xs">
-                <th className="py-3 px-4">Order ID</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Items Summary</th>
-                <th className="py-3 px-4 text-right">Amount</th>
-                <th className="py-3 px-4 text-center">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {recentOrders.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-6 text-center text-slate-400 text-xs font-semibold">
-                    No orders yet
-                  </td>
-                </tr>
-              ) : (
-                recentOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                    <td className="py-3.5 px-4 font-heading font-semibold text-slate-800 text-xs">{order.id}</td>
-                    <td className="py-3.5 px-4 text-slate-700 font-medium">{order.customerName}</td>
-                    <td className="py-3.5 px-4 text-slate-500 truncate max-w-[200px]">{order.items}</td>
-                    <td className="py-3.5 px-4 text-right font-bold text-slate-800">₹{order.total}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className={`
-                        inline-block text-[10px] font-extrabold px-2.5 py-0.5 rounded-full border
-                        ${order.status === 'Pending' && 'bg-amber-50 text-amber-700 border-amber-200'}
-                        ${order.status === 'Preparing' && 'bg-blue-50 text-blue-700 border-blue-200'}
-                        ${order.status === 'Out for Delivery' && 'bg-purple-50 text-purple-700 border-purple-200'}
-                        ${order.status === 'Delivered' && 'bg-emerald-50 text-emerald-700 border-emerald-200'}
-                      `}>
-                        {order.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+        {recentOrders.length === 0 ? (
+          <div className="text-center py-12 border border-dashed border-slate-200 rounded-2xl">
+            <ShoppingCart className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-xs font-bold text-slate-600">No Orders Registered Yet</p>
+            <p className="text-[11px] text-slate-400">Incoming buyer orders will stream into this feed automatically.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recentOrders.map((o) => (
+              <div 
+                key={o.id}
+                className="bg-slate-50 hover:bg-white p-4 rounded-2xl border border-slate-200/80 hover:border-emerald-200 shadow-xs hover:shadow-card transition-all flex flex-col justify-between text-left space-y-3"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[10px] font-mono font-bold text-slate-400">
+                      #{o.id.slice(-6)}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      o.status === 'Delivered'
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : o.status === 'Pending'
+                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                        : 'bg-blue-50 text-blue-700 border border-blue-200'
+                    }`}>
+                      {o.status}
+                    </span>
+                  </div>
+
+                  <h4 className="text-xs font-bold text-slate-800 font-heading truncate">
+                    {o.customerName}
+                  </h4>
+                  <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                    {o.items}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                  <span className="text-xs font-black font-heading text-slate-900">
+                    ₹{o.total}
+                  </span>
+                  <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {o.date}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Operational Highlights Strip */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-50 text-emerald-700">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Avg Prep Speed</p>
+            <h4 className="text-base font-bold text-slate-800 font-heading">14 mins / order</h4>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-blue-50 text-blue-700">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Fulfillment Accuracy</p>
+            <h4 className="text-base font-bold text-slate-800 font-heading">99.4% error-free</h4>
+          </div>
+        </div>
+
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-xs flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-orange-50 text-[#f27a21]">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Delivery Partner Rating</p>
+            <h4 className="text-base font-bold text-slate-800 font-heading">4.9 / 5.0 Star</h4>
+          </div>
         </div>
       </div>
+
     </div>
   );
 };
+export default StatsHome;
