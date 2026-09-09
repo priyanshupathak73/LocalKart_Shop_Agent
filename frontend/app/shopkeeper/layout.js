@@ -37,6 +37,13 @@ const ShopkeeperLayoutContent = ({ children }) => {
   const pathParts = pathname.split('/');
   const activeTab = pathParts[pathParts.length - 1] === 'shopkeeper' ? 'dashboard' : pathParts[pathParts.length - 1];
 
+  useEffect(() => {
+    shopkeeperMenu.forEach(item => {
+      router.prefetch(`/shopkeeper/${item.id}`);
+    });
+    router.prefetch('/shopkeeper/profile');
+  }, [router]);
+
   const handleSetActiveTab = (tabId) => {
     router.push(`/shopkeeper/${tabId}`);
   };

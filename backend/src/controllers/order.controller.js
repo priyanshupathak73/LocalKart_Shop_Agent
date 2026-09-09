@@ -5,6 +5,21 @@ import { getIO } from '../config/socket.js';
 // Helper to check valid 24-hex ObjectId string
 const isValidObjectId = (id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 
+// In-memory cache for shopId to eliminate redundant DB round-trips
+const shopIdCache = new Map();
+const getShopId = async (userId) => {
+  if (shopIdCache.has(userId)) {
+    return shopIdCache.get(userId);
+  }
+  const shop = await prisma.shop.findUnique({ where: { userId }, select: { id: true } });
+  if (shop) {
+    shopIdCache.set(userId, shop.id);
+    setTimeout(() => shopIdCache.delete(userId), 5 * 60 * 1000);
+    return shop.id;
+  }
+  return null;
+};
+
 // ─── Shared ──────────────────────────────────────────────────────────────────
 
 const getOrderById = async (req, res) => {
@@ -182,18 +197,15 @@ const createOrder = async (req, res) => {
  */
 const getShopOrders = async (req, res) => {
   try {
-    const shop = await prisma.shop.findUnique({
-      where: { userId: req.user.userId },
-      select: { id: true },
-    });
-    if (!shop) return sendError(res, 'Shop not found', 404);
+    const shopId = await getShopId(req.user.userId);
+    if (!shopId) return sendError(res, 'Shop not found', 404);
 
     const { status, page = '1', limit = '20' } = req.query;
     const pageNum = Math.max(1, parseInt(page));
     const limitNum = Math.min(50, parseInt(limit));
 
     const where = {
-      shopId: shop.id,
+      shopId,
       ...(status && { status }),
     };
 
@@ -223,8 +235,8 @@ const getShopOrders = async (req, res) => {
 const acceptOrder = async (req, res) => {
   try {
     if (!isValidObjectId(req.params.id)) return sendError(res, 'Order not found', 404);
-    const shop = await prisma.shop.findUnique({ where: { userId: req.user.userId }, select: { id: true } });
-    const order = await prisma.order.findFirst({ where: { id: req.params.id, shopId: shop?.id } });
+    const shopId = await getShopId(req.user.userId);
+    const order = await prisma.order.findFirst({ where: { id: req.params.id, shopId } });
 
     if (!order) return sendError(res, 'Order not found', 404);
     if (order.status !== 'Pending') {

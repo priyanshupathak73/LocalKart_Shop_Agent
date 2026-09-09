@@ -4,10 +4,19 @@ import { sendSuccess, sendError } from '../utils/response.js';
 // Helper to check valid 24-hex ObjectId string
 const isValidObjectId = (id) => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id);
 
-// Helper: get shopId for the authenticated user
+// In-memory cache for shopId to eliminate redundant DB round-trips
+const shopIdCache = new Map();
 const getShopId = async (userId) => {
+  if (shopIdCache.has(userId)) {
+    return shopIdCache.get(userId);
+  }
   const shop = await prisma.shop.findUnique({ where: { userId }, select: { id: true } });
-  return shop ? shop.id : null;
+  if (shop) {
+    shopIdCache.set(userId, shop.id);
+    setTimeout(() => shopIdCache.delete(userId), 5 * 60 * 1000);
+    return shop.id;
+  }
+  return null;
 };
 
 /**

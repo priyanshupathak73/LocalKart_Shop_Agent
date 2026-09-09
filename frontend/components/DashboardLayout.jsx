@@ -49,10 +49,10 @@ export const DashboardLayout = ({
             className={`flex items-center gap-1.5 px-2 py-1 rounded-full text-[10px] font-bold transition-all ${
               isStoreLive 
                 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40' 
-                : 'bg-amber-500/20 text-amber-300 border border-amber-400/40'
+                : 'bg-slate-500/20 text-slate-300 border border-slate-400/40'
             }`}
           >
-            <span className={`w-1.5 h-1.5 rounded-full ${isStoreLive ? 'bg-emerald-400 animate-ping' : 'bg-amber-400'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full ${isStoreLive ? 'bg-emerald-400 animate-ping' : 'bg-slate-400'}`} />
             <span>{isStoreLive ? 'Live' : 'Paused'}</span>
           </button>
 
@@ -230,10 +230,10 @@ export const DashboardLayout = ({
           
           <div className="flex items-center gap-3.5">
             {/* Store Rating Pill */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 border border-amber-200/60 text-amber-800 text-xs font-bold shadow-xs">
-              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-[#0e3e26] text-xs font-bold shadow-xs">
+              <Star className="w-3.5 h-3.5 text-[#105634] fill-[#105634]" />
               <span>4.8</span>
-              <span className="text-slate-400 font-normal text-[11px]">(128 reviews)</span>
+              <span className="text-slate-500 font-normal text-[11px]">(128 reviews)</span>
             </div>
 
             {/* Live Store Status Switcher */}

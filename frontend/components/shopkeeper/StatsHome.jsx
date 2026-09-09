@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useStore } from '../../store/useStore';
 import API from '../../api/api';
@@ -26,7 +26,7 @@ export const StatsHome = ({ setActiveTab }) => {
   const orders = useStore((state) => state.orders);
   const setProducts = useStore((state) => state.setProducts);
   const setOrders = useStore((state) => state.setOrders);
-
+  
   const [timeframe, setTimeframe] = useState('7d'); // '7d' | '30d' | '90d'
   const [hoveredPoint, setHoveredPoint] = useState(null);
 
@@ -64,63 +64,71 @@ export const StatsHome = ({ setActiveTab }) => {
     fetchData();
   }, [setOrders, setProducts]);
 
-  // Math metrics
-  const totalSales = orders
-    .filter(o => o.status === 'Delivered')
-    .reduce((sum, o) => sum + (o.total || 0), 0);
+  // Math metrics memoized for fast rendering
+  const totalSales = useMemo(() => {
+    return orders
+      .filter(o => o.status === 'Delivered')
+      .reduce((sum, o) => sum + (o.total || 0), 0);
+  }, [orders]);
 
-  const pendingOrders = orders.filter(o => o.status !== 'Delivered').length;
-  const lowStockProducts = products.filter(p => p.stock < 10);
+  const pendingOrders = useMemo(() => orders.filter(o => o.status !== 'Delivered').length, [orders]);
+  const lowStockProducts = useMemo(() => products.filter(p => p.stock < 10), [products]);
   const lowStockCount = lowStockProducts.length;
 
   // Render recent orders (limit to 4)
-  const recentOrders = orders.slice(0, 4);
+  const recentOrders = useMemo(() => orders.slice(0, 4), [orders]);
 
-  // SVG Chart Coordinates
-  const chartDatasets = {
-    '7d': [
-      { label: 'Mon', val: 1450 },
-      { label: 'Tue', val: 2100 },
-      { label: 'Wed', val: 1850 },
-      { label: 'Thu', val: 2950 },
-      { label: 'Fri', val: 2600 },
-      { label: 'Sat', val: 4100 },
-      { label: 'Sun', val: 4800 }
-    ],
-    '30d': [
-      { label: 'Week 1', val: 12400 },
-      { label: 'Week 2', val: 15800 },
-      { label: 'Week 3', val: 18900 },
-      { label: 'Week 4', val: 22400 }
-    ],
-    '90d': [
-      { label: 'Month 1', val: 45000 },
-      { label: 'Month 2', val: 58000 },
-      { label: 'Month 3', val: 72000 }
-    ]
-  };
+  // Memoized Chart Coordinates for high-performance rendering
+  const chartData = useMemo(() => {
+    const chartDatasets = {
+      '7d': [
+        { label: 'Mon', val: 1450 },
+        { label: 'Tue', val: 2100 },
+        { label: 'Wed', val: 1850 },
+        { label: 'Thu', val: 2950 },
+        { label: 'Fri', val: 2600 },
+        { label: 'Sat', val: 4100 },
+        { label: 'Sun', val: 4800 }
+      ],
+      '30d': [
+        { label: 'Week 1', val: 12400 },
+        { label: 'Week 2', val: 15800 },
+        { label: 'Week 3', val: 18900 },
+        { label: 'Week 4', val: 22400 }
+      ],
+      '90d': [
+        { label: 'Month 1', val: 45000 },
+        { label: 'Month 2', val: 58000 },
+        { label: 'Month 3', val: 72000 }
+      ]
+    };
 
-  const chartPoints = chartDatasets[timeframe] || chartDatasets['7d'];
-  const maxVal = Math.max(...chartPoints.map(p => p.val), 5000);
+    const points = chartDatasets[timeframe] || chartDatasets['7d'];
+    const maxVal = Math.max(...points.map(p => p.val), 5000);
 
-  // Map values to Y coordinates (viewBox 560 x 200)
-  const mapY = (val) => 165 - (val / maxVal) * 125;
-  const stepX = 500 / (chartPoints.length - 1 || 1);
-  const pathPoints = chartPoints.map((pt, i) => `${30 + i * stepX},${mapY(pt.val)}`);
-  
-  let pathD = `M ${pathPoints[0]}`;
-  for (let i = 1; i < pathPoints.length; i++) {
-    const [prevX, prevY] = pathPoints[i-1].split(',').map(Number);
-    const [currX, currY] = pathPoints[i].split(',').map(Number);
-    const cpX1 = prevX + stepX * 0.45;
-    const cpY1 = prevY;
-    const cpX2 = currX - stepX * 0.45;
-    const cpY2 = currY;
-    pathD += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${currX},${currY}`;
-  }
+    // Map values to Y coordinates (viewBox 560 x 200)
+    const mapY = (val) => 165 - (val / maxVal) * 125;
+    const stepX = 500 / (points.length - 1 || 1);
+    const pathPoints = points.map((pt, i) => `${30 + i * stepX},${mapY(pt.val)}`);
+    
+    let pathD = `M ${pathPoints[0]}`;
+    for (let i = 1; i < pathPoints.length; i++) {
+      const [prevX, prevY] = pathPoints[i-1].split(',').map(Number);
+      const [currX, currY] = pathPoints[i].split(',').map(Number);
+      const cpX1 = prevX + stepX * 0.45;
+      const cpY1 = prevY;
+      const cpX2 = currX - stepX * 0.45;
+      const cpY2 = currY;
+      pathD += ` C ${cpX1},${cpY1} ${cpX2},${cpY2} ${currX},${currY}`;
+    }
 
-  const lastPointX = 30 + (chartPoints.length - 1) * stepX;
-  const areaD = `${pathD} L ${lastPointX},180 L 30,180 Z`;
+    const lastPointX = 30 + (points.length - 1) * stepX;
+    const areaD = `${pathD} L ${lastPointX},180 L 30,180 Z`;
+
+    return { chartPoints: points, mapY, stepX, pathD, areaD };
+  }, [timeframe]);
+
+  const { chartPoints, mapY, stepX, pathD, areaD } = chartData;
 
   return (
     <div className="space-y-7">
@@ -217,14 +225,18 @@ export const StatsHome = ({ setActiveTab }) => {
         <motion.div 
           whileHover={{ y: -4 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-amber-200 transition-all relative overflow-hidden group"
+          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-emerald-300 transition-all relative overflow-hidden group"
         >
           <div className="flex items-center justify-between mb-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 border border-amber-100 flex items-center justify-center shadow-xs">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-xs border ${
+              lowStockCount > 0 
+                ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+            }`}>
               <AlertTriangle className="w-6 h-6" />
             </div>
             {lowStockCount > 0 ? (
-              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/70">
+              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-200">
                 Action Required
               </span>
             ) : (
@@ -246,13 +258,13 @@ export const StatsHome = ({ setActiveTab }) => {
         <motion.div 
           whileHover={{ y: -4 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-amber-200 transition-all relative overflow-hidden group"
+          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-emerald-300 transition-all relative overflow-hidden group"
         >
           <div className="flex items-center justify-between mb-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 border border-amber-200/60 flex items-center justify-center shadow-xs">
-              <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
+            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#105634] border border-emerald-200/70 flex items-center justify-center shadow-xs">
+              <Star className="w-6 h-6 fill-[#105634] text-[#105634]" />
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/70">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#0e3e26] bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200/70">
               Top Rated
             </span>
           </div>
@@ -442,7 +454,11 @@ export const StatsHome = ({ setActiveTab }) => {
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
-                <div className="p-2 rounded-xl bg-amber-50 text-amber-700 border border-amber-100">
+                <div className={`p-2 rounded-xl border ${
+                  lowStockCount > 0 
+                    ? 'bg-rose-50 text-rose-600 border-rose-100' 
+                    : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                }`}>
                   <AlertTriangle className="w-4 h-4" />
                 </div>
                 <div>
@@ -450,7 +466,11 @@ export const StatsHome = ({ setActiveTab }) => {
                   <p className="text-[11px] text-slate-400">Inventory items needing attention</p>
                 </div>
               </div>
-              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+              <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
+                lowStockCount > 0
+                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                  : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+              }`}>
                 {lowStockCount} items
               </span>
             </div>
@@ -544,8 +564,8 @@ export const StatsHome = ({ setActiveTab }) => {
                       o.status === 'Delivered'
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         : o.status === 'Pending'
-                        ? 'bg-amber-50 text-amber-700 border border-amber-200'
-                        : 'bg-blue-50 text-blue-700 border border-blue-200'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-slate-100 text-slate-700 border border-slate-200'
                     }`}>
                       {o.status}
                     </span>

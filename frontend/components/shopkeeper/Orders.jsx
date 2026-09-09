@@ -123,7 +123,7 @@ export const Orders = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Pending':
-        return 'bg-amber-50 text-amber-800 border-amber-200';
+        return 'bg-blue-50 text-blue-800 border-blue-200';
       case 'Accepted':
       case 'Confirmed':
         return 'bg-emerald-50 text-emerald-800 border-emerald-200';

@@ -171,10 +171,10 @@ export const Inventory = () => {
           <p className="text-[10px] text-emerald-600/80 mt-1">10+ units available</p>
         </div>
 
-        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-amber-200/60 shadow-xs bg-gradient-to-br from-white to-amber-50/20">
-          <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Low Stock</p>
-          <h3 className="text-xl sm:text-2xl font-black font-heading text-amber-700 mt-1">{lowStockCount}</h3>
-          <p className="text-[10px] text-amber-600/80 mt-1">Running below threshold</p>
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/70 shadow-xs">
+          <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Low Stock</p>
+          <h3 className="text-xl sm:text-2xl font-black font-heading text-slate-800 mt-1">{lowStockCount}</h3>
+          <p className="text-[10px] text-slate-400 mt-1">Running below threshold</p>
         </div>
 
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-rose-200/60 shadow-xs bg-gradient-to-br from-white to-rose-50/20">
@@ -293,7 +293,7 @@ export const Inventory = () => {
                           <div className="flex justify-between text-[10px] font-bold">
                             <span className={
                               currentEffectiveStock === 0 ? 'text-rose-600' :
-                              currentEffectiveStock < 10 ? 'text-amber-600' : 'text-emerald-700'
+                              currentEffectiveStock < 10 ? 'text-rose-600' : 'text-emerald-700'
                             }>
                               {currentEffectiveStock === 0 ? 'Out of Stock' : `${currentEffectiveStock} units`}
                             </span>
@@ -303,7 +303,7 @@ export const Inventory = () => {
                             <div 
                               className={`h-full rounded-full transition-all duration-300 ${
                                 currentEffectiveStock === 0 ? 'bg-rose-500 w-2' :
-                                currentEffectiveStock < 10 ? 'bg-amber-500' : 'bg-emerald-600'
+                                currentEffectiveStock < 10 ? 'bg-rose-500' : 'bg-emerald-600'
                               }`}
                               style={{ width: `${Math.max(5, gaugePct)}%` }}
                             />
@@ -331,7 +331,7 @@ export const Inventory = () => {
                             onChange={(e) => handleStockChange(p.id, e.target.value)}
                             className={`w-14 text-center py-1.5 rounded-xl border text-xs font-black font-heading outline-none transition-all ${
                               isModified 
-                                ? 'bg-amber-50 border-amber-400 text-amber-900 ring-2 ring-amber-400/20' 
+                                ? 'bg-emerald-50 border-[#105634] text-[#0e3e26] ring-2 ring-emerald-500/20' 
                                 : 'bg-slate-50 border-slate-200 text-slate-800'
                             }`}
                           />

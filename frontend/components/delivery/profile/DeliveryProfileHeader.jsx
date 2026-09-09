@@ -35,9 +35,9 @@ export const DeliveryProfileHeader = ({ user }) => {
         <div className="flex items-center gap-3 shrink-0">
           <div className="bg-white/10 backdrop-blur-md border border-white/15 p-3 rounded-2xl text-left">
             <p className="text-[10px] text-slate-300 uppercase tracking-wider font-bold flex items-center gap-1">
-              <Star className="w-3 h-3 text-amber-400 fill-amber-400" /> Rider Rating
+              <Star className="w-3 h-3 text-emerald-400 fill-emerald-400" /> Rider Rating
             </p>
-            <p className="text-sm font-black text-amber-300 font-heading">4.92 / 5.0</p>
+            <p className="text-sm font-black text-emerald-200 font-heading">4.92 / 5.0</p>
           </div>
 
           <div className="bg-white/10 backdrop-blur-md border border-white/15 p-3 rounded-2xl text-left">

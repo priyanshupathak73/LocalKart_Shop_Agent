@@ -95,6 +95,9 @@ model Product {
   orderItems    OrderItem[]
   inventoryLogs InventoryLog[]
 
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([shopId, category])
+  @@index([shopId, stock])
   @@map("products")
 }
 
@@ -158,6 +161,10 @@ model Order {
   deliveryPartner DeliveryPartner? @relation(fields: [deliveryPartnerId], references: [id])
   items           OrderItem[]
 
+  @@index([shopId, status])
+  @@index([shopId, createdAt(sort: Desc)])
+  @@index([customerId])
+  @@index([deliveryPartnerId, status])
   @@map("orders")
 }
 

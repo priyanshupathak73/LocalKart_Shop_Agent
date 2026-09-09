@@ -323,7 +323,7 @@ export const Products = () => {
                       stock === 0
                         ? 'bg-rose-50 text-rose-700 border-rose-200'
                         : stock < 10
-                        ? 'bg-amber-50 text-amber-700 border-amber-200'
+                        ? 'bg-rose-50 text-rose-700 border-rose-200'
                         : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     }`}>
                       {stock === 0 ? 'Out of Stock' : `${stock} in stock`}
@@ -431,7 +431,7 @@ export const Products = () => {
                           stock === 0
                             ? 'bg-rose-50 text-rose-700 border border-rose-200'
                             : stock < 10
-                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
                             : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         }`}>
                           {stock} units
