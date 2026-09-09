@@ -1,11 +1,14 @@
 @import "tailwindcss";
 
+/* Disable dark mode variant from activating via system/media queries */
+@custom-variant dark (&:is(.never-dark-disabled *));
+
 @theme {
   --color-brand-dark: #0e3e26;
   --color-brand-medium: #105634;
   --color-brand-light: #e8f5e9;
-  --color-brand-accent: #f27a21;
-  --color-brand-bg-dark: #070b13;
+  --color-brand-accent: #105634;
+  --color-brand-bg-dark: #0e3e26;
   --color-brand-light-hover: #dcfce7;
   
   --font-sans: var(--font-inter), sans-serif;
@@ -16,16 +19,16 @@
   --font-sans: var(--font-inter);
   --font-heading: var(--font-outfit);
 
-  /* Light mode tokens matching customer website */
+  /* Strict Light mode tokens matching customer website */
   --bg-page:        #f9fafb;
   --bg-surface:     #ffffff;
   --bg-surface-2:   #f8f9fa;
-  --bg-input:       #ffffff;
-  --text-primary:   #111827;
-  --text-secondary: #4b5563;
-  --text-muted:     #9ca3af;
-  --border-color:   #e5e7eb;
-  --border-subtle:  rgba(229, 231, 235, 0.7);
+  --bg-input:       #f8fafc;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --border-color:   #e2e8f0;
+  --border-subtle:  rgba(226, 232, 240, 0.8);
   --nav-bg:         #ffffff;
   --subnav-bg:      #f8f9fa;
   --card-bg:        #ffffff;
@@ -36,6 +39,7 @@
 
 html {
   color-scheme: light !important;
+  background-color: var(--bg-page);
 }
 
 body {
@@ -50,6 +54,34 @@ h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading), sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
+}
+
+/* Force pure light styling for all input elements across the app */
+input, textarea, select {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #105634 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Prevent browser dark-mode and autofill overrides */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 40px #f8fafc inset !important;
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+  border-color: #e2e8f0 !important;
 }
 
 /* Custom Animation Utilities */

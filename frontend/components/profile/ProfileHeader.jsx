@@ -7,7 +7,7 @@ export const ProfileHeader = ({ user, storeName = 'Gupta Kirana Store', category
   return (
     <div className="bg-gradient-to-r from-[#0e3e26] via-[#105634] to-[#126b41] text-white rounded-3xl p-6 md:p-8 shadow-xl relative overflow-hidden text-left">
       <div className="absolute right-0 top-0 translate-x-8 -translate-y-8 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/3 w-48 h-48 bg-[#f27a21]/15 rounded-full blur-2xl pointer-events-none" />
+      <div className="absolute bottom-0 right-1/3 w-48 h-48 bg-emerald-300/10 rounded-full blur-2xl pointer-events-none" />
 
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 relative z-10">
         <div className="flex items-center gap-5">

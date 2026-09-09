@@ -87,13 +87,13 @@ export const AddressFields = ({
 
       {/* State */}
       <div className="space-y-1.5 text-left">
-        <label className="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider font-heading">
+        <label className="block text-xs font-black text-slate-700 uppercase tracking-wider font-heading">
           State *
         </label>
         <select
           value={stateName}
           onChange={(e) => update(setStateName, 'stateName', e.target.value)}
-          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 focus:border-emerald-500 rounded-xl px-4 py-3 text-xs outline-none dark:text-slate-100 font-semibold transition-all"
+          className="w-full bg-slate-50 focus:bg-white text-slate-800 border border-slate-200 focus:border-[#105634] focus:ring-2 focus:ring-emerald-500/15 rounded-2xl px-4 py-3 text-xs outline-none font-semibold transition-all"
         >
           {INDIAN_STATES.map((st) => (
             <option key={st} value={st}>{st}</option>

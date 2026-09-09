@@ -40,7 +40,7 @@ export const BusinessHoursSettings = ({ showToast }) => {
               type="time"
               value={openingTime}
               onChange={(e) => setOpeningTime(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl px-4 py-2.5 text-xs font-semibold outline-none focus:border-emerald-500 text-slate-800"
+              className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#105634] focus:ring-2 focus:ring-emerald-500/15 text-slate-800 transition-all"
             />
           </div>
 
@@ -52,7 +52,7 @@ export const BusinessHoursSettings = ({ showToast }) => {
               type="time"
               value={closingTime}
               onChange={(e) => setClosingTime(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl px-4 py-2.5 text-xs font-semibold outline-none focus:border-emerald-500 text-slate-800"
+              className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl px-4 py-2.5 text-xs font-semibold outline-none focus:border-[#105634] focus:ring-2 focus:ring-emerald-500/15 text-slate-800 transition-all"
             />
           </div>
         </div>

@@ -219,7 +219,7 @@ export default function RegisterShopkeeperPage() {
     <div className="min-h-screen bg-[#f9fafb] text-slate-800 flex flex-col font-sans relative">
       {draftSavedToast && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#105634] text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold font-heading flex items-center gap-2 animate-bounce">
-          <Sparkles className="w-4 h-4 text-[#f27a21]" /> Progress Auto-Saved to Draft!
+          <Sparkles className="w-4 h-4 text-emerald-300" /> Progress Auto-Saved to Draft!
         </div>
       )}
 

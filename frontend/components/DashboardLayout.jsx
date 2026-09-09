@@ -7,7 +7,6 @@ import {
   X, 
   Bell, 
   User, 
-  LogOut, 
   Star, 
   Store, 
   Sparkles,
@@ -104,7 +103,7 @@ export const DashboardLayout = ({
             </div>
             <div>
               <h1 className="text-sm font-black font-heading tracking-tight text-white flex items-center gap-1">
-                LocalKart <span className="text-[#f27a21] text-xs">●</span>
+                LocalKart <span className="text-emerald-400 text-xs">●</span>
               </h1>
               <span className="text-[10px] text-emerald-300/80 font-bold uppercase tracking-wider block">
                 Merchant Center
@@ -189,39 +188,29 @@ export const DashboardLayout = ({
           })}
         </nav>
 
-        {/* Merchant Footer Profile Card & Sign Out */}
+        {/* Merchant Footer Profile Card (Navigates to Account Page) */}
         <div className="p-4 border-t border-emerald-800/40 bg-emerald-950/30">
-          <div className="flex items-center justify-between gap-3">
-            <button
-              onClick={() => {
-                setActiveTab('profile');
-                setIsSidebarOpen(false);
-              }}
-              className="flex items-center gap-2.5 text-left flex-1 min-w-0 hover:opacity-85 transition-opacity"
-            >
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-300 text-[#0e3e26] flex items-center justify-center font-bold text-xs shadow-md shrink-0">
-                {user?.name ? user.name.charAt(0).toUpperCase() : 'M'}
-              </div>
-              <div className="truncate">
-                <p className="text-xs font-bold text-white truncate font-heading">
-                  {user?.name || 'Ashwani Gupta'}
-                </p>
-                <p className="text-[10px] text-emerald-300/70 truncate">
-                  {user?.email || 'merchant@localkart.in'}
-                </p>
-              </div>
-            </button>
-
-            {logout && (
-              <button
-                onClick={logout}
-                className="p-2 rounded-xl text-emerald-300/70 hover:text-white hover:bg-rose-500/20 hover:text-rose-300 transition-colors"
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+          <button
+            onClick={() => {
+              setActiveTab('profile');
+              setIsSidebarOpen(false);
+            }}
+            className="w-full flex items-center gap-2.5 text-left p-1.5 rounded-2xl hover:bg-white/10 transition-colors group cursor-pointer"
+            title="View Store & Merchant Profile"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-300 text-[#0e3e26] flex items-center justify-center font-bold text-xs shadow-md shrink-0 group-hover:scale-105 transition-transform">
+              {user?.name ? user.name.charAt(0).toUpperCase() : 'M'}
+            </div>
+            <div className="truncate flex-1">
+              <p className="text-xs font-bold text-white truncate font-heading group-hover:text-emerald-200 transition-colors">
+                {user?.name || 'Ashwani Gupta'}
+              </p>
+              <p className="text-[10px] text-emerald-300/70 truncate">
+                {user?.email || 'merchant@localkart.in'}
+              </p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-emerald-300/60 group-hover:text-white transition-colors" />
+          </button>
         </div>
       </aside>
 
@@ -265,7 +254,7 @@ export const DashboardLayout = ({
             {/* Notification Bell */}
             <button className="p-2 text-slate-500 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-all relative">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#f27a21] rounded-full ring-2 ring-white"></span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white"></span>
             </button>
 
             {/* User Profile Avatar Link */}

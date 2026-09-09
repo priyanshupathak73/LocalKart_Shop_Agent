@@ -40,7 +40,7 @@ export const DeliveryRadiusSettings = ({ showToast }) => {
                 type="number"
                 value={radius}
                 onChange={(e) => setRadius(parseInt(e.target.value) || 0)}
-                className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl pl-4 pr-12 py-2.5 text-xs font-semibold outline-none focus:border-emerald-500 text-slate-800"
+                className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl pl-4 pr-12 py-2.5 text-xs font-semibold outline-none focus:border-[#105634] focus:ring-2 focus:ring-emerald-500/15 text-slate-800 transition-all"
               />
               <span className="absolute right-4 top-2.5 text-xs font-bold text-slate-400">km</span>
             </div>
@@ -55,7 +55,7 @@ export const DeliveryRadiusSettings = ({ showToast }) => {
                 type="number"
                 value={minFreeDelivery}
                 onChange={(e) => setMinFreeDelivery(parseInt(e.target.value) || 0)}
-                className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl pl-4 pr-12 py-2.5 text-xs font-semibold outline-none focus:border-emerald-500 text-slate-800"
+                className="w-full bg-slate-50 border border-slate-200 focus:bg-white rounded-2xl pl-4 pr-12 py-2.5 text-xs font-semibold outline-none focus:border-[#105634] focus:ring-2 focus:ring-emerald-500/15 text-slate-800 transition-all"
               />
               <span className="absolute right-4 top-2.5 text-xs font-bold text-slate-400">INR</span>
             </div>

@@ -53,7 +53,7 @@ export default function Home() {
           <main className="flex-1 overflow-x-auto overflow-y-auto px-8 py-10 flex flex-col items-center bg-slate-50">
             <div className="max-w-4xl text-center mb-8 space-y-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-[#105634] bg-emerald-50 border border-emerald-200">
-                <Sparkles className="w-3.5 h-3.5 text-[#f27a21]" /> Interactive 3-Screen Preview
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> Interactive 3-Screen Preview
               </span>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 font-heading">
                 Store Onboarding Experience
@@ -121,7 +121,7 @@ export default function Home() {
                   onClick={() => setShowMockup(true)}
                   className="bg-emerald-50 hover:bg-emerald-100/70 text-[#0e3e26] border border-emerald-200 text-xs font-bold px-4 py-2 rounded-2xl transition-all shadow-xs flex items-center gap-1.5 font-heading"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-[#f27a21]" />
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                   <span>UI Flow Mockup</span>
                 </button>
               </div>
@@ -135,7 +135,7 @@ export default function Home() {
               {/* Left Column: Value Proposition */}
               <div className="lg:col-span-7 space-y-6 text-left">
                 <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold text-[#105634] bg-emerald-50 border border-emerald-200/70">
-                  <MapPin className="w-3.5 h-3.5 text-[#f27a21]" /> Empowering Neighborhood Commerce
+                  <MapPin className="w-3.5 h-3.5 text-emerald-600" /> Empowering Neighborhood Commerce
                 </span>
 
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.12] tracking-tight font-heading">

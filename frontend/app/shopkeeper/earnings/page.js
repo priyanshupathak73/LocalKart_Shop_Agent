@@ -141,7 +141,7 @@ export default function EarningsPage() {
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-bold text-emerald-200 uppercase tracking-wider">Available Net Balance</span>
             <span className="p-2 bg-white/10 text-emerald-300 rounded-xl border border-white/20">
-              <Sparkles className="w-4 h-4 text-[#f27a21]" />
+              <Sparkles className="w-4 h-4 text-emerald-300" />
             </span>
           </div>
           <h3 className="text-3xl font-black font-heading text-white">₹{netEarnings.toLocaleString()}</h3>

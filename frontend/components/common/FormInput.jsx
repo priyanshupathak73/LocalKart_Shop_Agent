@@ -25,7 +25,7 @@ export const FormInput = ({
     <div className={`space-y-1.5 text-left ${className}`}>
       {label && (
         <div className="flex justify-between items-center">
-          <label className="block text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider font-heading">
+          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-heading">
             {label} {required && '*'}
           </label>
           {badge && (
@@ -54,13 +54,13 @@ export const FormInput = ({
           }}
           onBlur={onBlur}
           placeholder={placeholder}
-          className={`w-full bg-white dark:bg-slate-900 border rounded-xl py-3 text-xs outline-none dark:text-slate-100 font-semibold transition-all shadow-xs ${
+          className={`w-full bg-slate-50 focus:bg-white text-slate-800 border rounded-2xl py-3 text-xs outline-none font-semibold transition-all shadow-xs ${
             Icon ? 'pl-10 pr-4' : 'px-4'
           } ${rightElement ? 'pr-12' : ''} ${
             error
-              ? 'border-red-500/90 focus:border-red-600 bg-red-50/10'
-              : 'border-slate-200 dark:border-slate-800 focus:border-emerald-500 dark:focus:border-emerald-500'
-          } ${fontMono ? 'font-mono' : ''} ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-800/40' : ''}`}
+              ? 'border-rose-400 focus:border-rose-600 bg-rose-50/20'
+              : 'border-slate-200 focus:border-[#105634] focus:ring-2 focus:ring-emerald-500/15'
+          } ${fontMono ? 'font-mono' : ''} ${disabled ? 'opacity-60 cursor-not-allowed bg-slate-100' : ''}`}
         />
 
         {rightElement && (
@@ -71,8 +71,9 @@ export const FormInput = ({
       </div>
 
       {error && (
-        <p className="text-[10px] text-red-500 font-bold mt-1">{error}</p>
+        <p className="text-[10px] text-rose-600 font-bold mt-1">{error}</p>
       )}
     </div>
   );
 };
+export default FormInput;

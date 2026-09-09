@@ -38,7 +38,7 @@ export const RegistrationHero = () => {
     <div className="lg:col-span-5 space-y-8 lg:sticky lg:top-24">
       <div className="space-y-4 text-left">
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-[#105634] bg-emerald-50 border border-emerald-200">
-          <Sparkles className="w-3.5 h-3.5 text-[#f27a21]" /> Start Earning in Neighborhood
+          <Sparkles className="w-3.5 h-3.5 text-emerald-600" /> Start Earning in Neighborhood
         </span>
         <h1 className="text-3xl sm:text-4xl font-black text-slate-900 leading-tight tracking-tight font-heading">
           Become an <br />e-LocalKart Merchant

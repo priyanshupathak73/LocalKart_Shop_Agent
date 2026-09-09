@@ -129,12 +129,12 @@ export const StatsHome = ({ setActiveTab }) => {
       <div className="bg-gradient-to-r from-[#0e3e26] via-[#105634] to-[#126b41] rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden">
         {/* Subtle decorative mesh background */}
         <div className="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 right-1/4 -mb-10 w-48 h-48 bg-[#f27a21]/15 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute bottom-0 right-1/4 -mb-10 w-48 h-48 bg-emerald-400/15 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/10 backdrop-blur-md text-emerald-200 border border-white/15">
-              <Sparkles className="w-3.5 h-3.5 text-[#f27a21]" />
+              <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
               <span>Store Dispatch Live</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black font-heading tracking-tight text-white">
@@ -246,13 +246,13 @@ export const StatsHome = ({ setActiveTab }) => {
         <motion.div 
           whileHover={{ y: -4 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-orange-200 transition-all relative overflow-hidden group"
+          className="bg-white p-6 rounded-3xl border border-slate-200/70 shadow-card hover:border-amber-200 transition-all relative overflow-hidden group"
         >
           <div className="flex items-center justify-between mb-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-orange-50 text-[#f27a21] border border-orange-100 flex items-center justify-center shadow-xs">
-              <Star className="w-6 h-6 fill-[#f27a21]" />
+            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 border border-amber-200/60 flex items-center justify-center shadow-xs">
+              <Star className="w-6 h-6 fill-amber-400 text-amber-400" />
             </div>
-            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-800 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200/70">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/70">
               Top Rated
             </span>
           </div>
@@ -278,7 +278,7 @@ export const StatsHome = ({ setActiveTab }) => {
             </div>
 
             {/* Timeframe selector pills */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-2xl self-start sm:self-auto">
+            <div className="flex items-center gap-1 bg-slate-100 p-1.5 rounded-2xl self-start sm:self-auto border border-slate-200/60">
               {[
                 { id: '7d', label: '7 Days' },
                 { id: '30d', label: '30 Days' },
@@ -287,10 +287,10 @@ export const StatsHome = ({ setActiveTab }) => {
                 <button
                   key={t.id}
                   onClick={() => setTimeframe(t.id)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     timeframe === t.id
-                      ? 'bg-white text-[#0e3e26] shadow-xs'
-                      : 'text-slate-500 hover:text-slate-800'
+                      ? 'bg-[#105634] text-white shadow-sm'
+                      : 'text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
                   }`}
                 >
                   {t.label}
@@ -304,7 +304,7 @@ export const StatsHome = ({ setActiveTab }) => {
             <svg viewBox="0 0 560 200" className="w-full h-full overflow-visible" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="chartEmeraldGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#105634" stopOpacity="0.22" />
+                  <stop offset="0%" stopColor="#105634" stopOpacity="0.25" />
                   <stop offset="100%" stopColor="#105634" stopOpacity="0.0" />
                 </linearGradient>
               </defs>
@@ -315,18 +315,84 @@ export const StatsHome = ({ setActiveTab }) => {
               <line x1="30" y1="125" x2="530" y2="125" stroke="#f1f5f9" strokeWidth="1.5" strokeDasharray="3 3" />
               <line x1="30" y1="170" x2="530" y2="170" stroke="#e2e8f0" strokeWidth="1.5" />
 
-              {/* Gradient Area & Stroke */}
-              <path d={areaD} fill="url(#chartEmeraldGrad)" />
-              <path d={pathD} fill="none" stroke="#105634" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+              {/* Animated Gradient Area */}
+              <motion.path 
+                key={`spline-area-${timeframe}`}
+                d={areaD} 
+                fill="url(#chartEmeraldGrad)"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
+              />
 
-              {/* Data Nodes */}
+              {/* Animated Line Drawing (PathLength from 0 to 1) */}
+              <motion.path 
+                key={`spline-line-${timeframe}`}
+                d={pathD} 
+                fill="none" 
+                stroke="#105634" 
+                strokeWidth="3.5" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{
+                  pathLength: { duration: 1.1, ease: [0.16, 1, 0.3, 1] },
+                  opacity: { duration: 0.2 }
+                }}
+              />
+
+              {/* Moving Effect of Line (Continuous Tracer Pulse Flow) */}
+              <motion.path
+                key={`spline-tracer-${timeframe}`}
+                d={pathD}
+                fill="none"
+                stroke="#34d399"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeDasharray="35 180"
+                initial={{ strokeDashoffset: 400, opacity: 0 }}
+                animate={{ strokeDashoffset: 0, opacity: [0, 0.95, 0.6, 0] }}
+                transition={{
+                  duration: 2.2,
+                  repeat: Infinity,
+                  ease: "linear",
+                  delay: 0.5
+                }}
+              />
+
+              {/* Animated Staggered Data Nodes */}
               {chartPoints.map((pt, i) => {
                 const cx = 30 + i * stepX;
                 const cy = mapY(pt.val);
                 const isHovered = hoveredPoint === i;
 
                 return (
-                  <g key={i} onMouseEnter={() => setHoveredPoint(i)} onMouseLeave={() => setHoveredPoint(null)}>
+                  <motion.g 
+                    key={`${timeframe}-${i}`}
+                    initial={{ opacity: 0, scale: 0, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    transition={{
+                      delay: 0.2 + (i / chartPoints.length) * 0.65,
+                      duration: 0.4,
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 24
+                    }}
+                    onMouseEnter={() => setHoveredPoint(i)} 
+                    onMouseLeave={() => setHoveredPoint(null)}
+                    className="cursor-pointer"
+                  >
+                    {isHovered && (
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={14}
+                        fill="#105634"
+                        opacity="0.18"
+                        className="animate-ping"
+                      />
+                    )}
                     <circle 
                       cx={cx} 
                       cy={cy} 
@@ -334,7 +400,7 @@ export const StatsHome = ({ setActiveTab }) => {
                       fill="#0e3e26" 
                       stroke="#ffffff" 
                       strokeWidth="2.5" 
-                      className="cursor-pointer transition-all" 
+                      className="transition-all duration-200" 
                     />
                     
                     {/* Value Badge */}
@@ -342,7 +408,7 @@ export const StatsHome = ({ setActiveTab }) => {
                       x={cx} 
                       y={cy - 12} 
                       textAnchor="middle" 
-                      className="text-[11px] font-black fill-slate-800 font-heading"
+                      className="text-[11px] font-black fill-slate-800 font-heading select-none pointer-events-none"
                     >
                       ₹{pt.val.toLocaleString()}
                     </text>
@@ -352,11 +418,11 @@ export const StatsHome = ({ setActiveTab }) => {
                       x={cx} 
                       y="190" 
                       textAnchor="middle" 
-                      className="text-[10px] font-bold fill-slate-400 font-sans"
+                      className="text-[10px] font-bold fill-slate-400 font-sans select-none pointer-events-none"
                     >
                       {pt.label}
                     </text>
-                  </g>
+                  </motion.g>
                 );
               })}
             </svg>
@@ -530,7 +596,7 @@ export const StatsHome = ({ setActiveTab }) => {
         </div>
 
         <div className="bg-white p-5 rounded-2xl border border-slate-200/60 shadow-xs flex items-center gap-4">
-          <div className="p-3 rounded-xl bg-orange-50 text-[#f27a21]">
+          <div className="p-3 rounded-xl bg-emerald-50 text-[#105634]">
             <Sparkles className="w-5 h-5" />
           </div>
           <div>
