@@ -17,6 +17,10 @@ const inter = Inter({
 export const metadata = {
   title: 'LocalKart - Merchant & Shopkeeper Portal',
   description: 'Empowering local commerce by connecting offline store owners with logistics partners.',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({ children }) {

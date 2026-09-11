@@ -6,6 +6,19 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'framer-motion'],
   },
+  async headers() {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-Robots-Tag',
+            value: 'noindex, nofollow',
+          },
+        ],
+      },
+    ];
+  },
   async rewrites() {
     const backendUrl = process.env.NEXT_PRIVATE_API_URL || 'http://localhost:5001/api';
     return [
