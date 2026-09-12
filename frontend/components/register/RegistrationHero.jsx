@@ -44,7 +44,7 @@ export const RegistrationHero = () => {
           Become an <br />e-LocalKart Merchant
         </h1>
         <p className="text-slate-600 text-sm max-w-md">
-          Digitize your neighborhood store today. Partner with local delivery runners and serve thousands of households instantly.
+          Join e-LocalKart for Merchants (LocalKart / elocalkart merchant partner). Digitize your neighborhood store today, receive automated orders, and serve households with fast doorstep delivery.
         </p>
       </div>
 

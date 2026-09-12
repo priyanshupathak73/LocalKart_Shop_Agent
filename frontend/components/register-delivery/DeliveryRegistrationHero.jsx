@@ -32,7 +32,7 @@ export const DeliveryRegistrationHero = () => {
           Become an <br />e-LocalKart Delivery Partner
         </h1>
         <p className="text-slate-500 dark:text-slate-400 text-sm max-w-md">
-          Deliver local groceries, food & essentials to neighborhood customers. Flexible hours, instant daily payouts, and zero registration fees.
+          Join the e-LocalKart delivery fleet (LocalKart / elocalkart delivery partner). Deliver local groceries & essentials with flexible shifts, instant daily payouts, and zero registration fees.
         </p>
       </div>
 
