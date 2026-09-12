@@ -15,11 +15,11 @@ const inter = Inter({
 });
 
 export const metadata = {
+  metadataBase: new URL('https://merchant.e-localkart.in'),
   title: 'LocalKart - Merchant & Shopkeeper Portal',
   description: 'Empowering local commerce by connecting offline store owners with logistics partners.',
-  robots: {
-    index: false,
-    follow: false,
+  alternates: {
+    canonical: '/',
   },
 };
 
