@@ -16,10 +16,41 @@ const inter = Inter({
 
 export const metadata = {
   metadataBase: new URL('https://merchant.e-localkart.in'),
-  title: 'LocalKart - Merchant & Shopkeeper Portal',
-  description: 'Empowering local commerce by connecting offline store owners with logistics partners.',
+  title: 'e-LocalKart - Merchant & Shopkeeper Portal',
+  description: 'Empowering local commerce by connecting offline store owners with logistics partners on e-LocalKart.',
   alternates: {
     canonical: '/',
+  },
+  icons: {
+    icon: [
+      { url: '/icon.png' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/assets/Logo.png',
+  },
+  openGraph: {
+    title: 'e-LocalKart - Merchant & Shopkeeper Portal',
+    description: 'Empowering local commerce by connecting offline store owners with logistics partners on e-LocalKart.',
+    url: 'https://merchant.e-localkart.in/',
+    siteName: 'e-LocalKart Merchant Hub',
+    images: [
+      {
+        url: '/assets/Logo.png',
+        width: 1456,
+        height: 1080,
+        alt: 'e-LocalKart Logo',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'e-LocalKart - Merchant & Shopkeeper Portal',
+    description: 'Empowering local commerce by connecting offline store owners with logistics partners on e-LocalKart.',
+    images: ['/assets/Logo.png'],
   },
 };
 

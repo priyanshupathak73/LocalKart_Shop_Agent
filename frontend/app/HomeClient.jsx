@@ -108,10 +108,10 @@ export default function HomeClient() {
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="bg-white p-1.5 rounded-xl shadow-xs border border-slate-100">
-                  <img src="/assets/Logo.png" className="h-8 w-auto object-contain" alt="LocalKart" />
+                  <img src="/assets/Logo.png" className="h-8 w-auto object-contain" alt="e-LocalKart Logo" />
                 </div>
                 <div className="hidden sm:block">
-                  <p className="text-xs font-black font-heading text-slate-900 leading-tight">LocalKart</p>
+                  <p className="text-xs font-black font-heading text-slate-900 leading-tight">e-LocalKart</p>
                   <span className="text-[10px] text-slate-400 font-semibold block">Merchant & Partner Hub</span>
                 </div>
               </div>

@@ -35,8 +35,9 @@ export const DashboardLayout = ({
       <header className="md:hidden bg-[#0e3e26] text-white px-4 py-3 flex items-center justify-between shadow-md z-50 sticky top-0">
         <div className="flex items-center gap-2.5">
           <div className="bg-white px-2 py-1 rounded-xl shadow-sm">
-            <img src="/assets/Logo.png" className="h-6 w-auto object-contain" alt="LocalKart" />
+            <img src="/assets/Logo.png" className="h-6 w-auto object-contain" alt="e-LocalKart Logo" />
           </div>
+          <span className="font-extrabold text-sm text-white tracking-tight">e-LocalKart</span>
           <span className="text-[10px] uppercase tracking-wider font-extrabold bg-[#105634] text-emerald-200 border border-emerald-600/40 px-2 py-0.5 rounded-full">
             {user?.role || 'MERCHANT'}
           </span>
@@ -99,11 +100,11 @@ export const DashboardLayout = ({
         <div className="p-6 border-b border-emerald-800/40">
           <div className="flex items-center gap-3">
             <div className="bg-white p-2 rounded-2xl shadow-md ring-2 ring-emerald-500/20">
-              <img src="/assets/Logo.png" className="h-7 w-auto object-contain" alt="LocalKart" />
+              <img src="/assets/Logo.png" className="h-7 w-auto object-contain" alt="e-LocalKart Logo" />
             </div>
             <div>
               <h1 className="text-sm font-black font-heading tracking-tight text-white flex items-center gap-1">
-                LocalKart <span className="text-emerald-400 text-xs">●</span>
+                e-LocalKart <span className="text-emerald-400 text-xs">●</span>
               </h1>
               <span className="text-[10px] text-emerald-300/80 font-bold uppercase tracking-wider block">
                 Merchant Center
