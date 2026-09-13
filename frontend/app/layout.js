@@ -21,15 +21,6 @@ export const metadata = {
   alternates: {
     canonical: '/',
   },
-  icons: {
-    icon: [
-      { url: '/icon.png' },
-      { url: '/favicon.svg', type: 'image/svg+xml' },
-      { url: '/favicon.ico' },
-    ],
-    shortcut: '/favicon.ico',
-    apple: '/assets/Logo.png',
-  },
   openGraph: {
     title: 'e-LocalKart - Merchant & Shopkeeper Portal',
     description: 'Empowering local commerce by connecting offline store owners with logistics partners on e-LocalKart.',
