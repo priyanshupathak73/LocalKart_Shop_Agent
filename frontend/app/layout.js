@@ -21,6 +21,11 @@ export const metadata = {
   alternates: {
     canonical: '/',
   },
+  icons: {
+    icon: '/assets/Logo.png',
+    shortcut: '/assets/Logo.png',
+    apple: '/assets/Logo.png',
+  },
   openGraph: {
     title: 'e-LocalKart - Merchant & Shopkeeper Portal',
     description: 'Empowering local commerce by connecting offline store owners with logistics partners on e-LocalKart.',
